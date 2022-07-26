@@ -1,0 +1,17 @@
+{% extends '_base.html' %}
+
+{% block title %} Settings {% endblock title %}
+
+{% block content %}
+    <h1>Account Settings</h1>
+    {% if user.is_authenticated %}
+    <p><a href={% url 'account_change_password' %}>Change password</a></p>
+    <p><a href={% url 'account_reset_password' %}>Reset password</a></p>
+    <p><a href={% url 'account_email' %}>Manage e-mail</a></p>
+    <p><a href={% url 'socialaccount_connections' %}>Manage socials</a></p>
+
+
+    {% else %}
+        You are not logged in.
+    {% endif %}
+{% endblock content %}

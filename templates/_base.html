@@ -1,0 +1,20 @@
+<html>
+   <head>
+      <meta charset="utf-8" />
+      <title>{% block title %}Bookstore{% endblock title %}</title>
+   </head>
+   <body>
+      <div class="container">
+        <a href={% url 'home' %}><h1>Store</h1></a>
+         {% if user.is_authenticated %}
+         Hi {{ user.email }}
+         <a href={% url 'account_settings' %}>Settings</a>
+         <a href={% url 'account_logout' %}>Log Out</a>
+         {% else %}
+         <a href={% url 'account_login' %}>Log In</a>
+         <a href={% url 'account_signup' %}>Sign Up</a>
+         {% endif %}
+         {% block content %}{% endblock content %}
+      </div>
+   </body>
+</html>
