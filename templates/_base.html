@@ -1,7 +1,7 @@
 <html>
    <head>
       <meta charset="utf-8" />
-      <title>{% block title %}Bookstore{% endblock title %}</title>
+      <title>{% block title %}Store{% endblock title %}</title>
    </head>
    <body>
       <div class="container">
@@ -14,6 +14,7 @@
          <a href={% url 'account_login' %}>Log In</a>
          <a href={% url 'account_signup' %}>Sign Up</a>
          {% endif %}
+         <a href={% url 'product_list' %}>Store</a>
          {% block content %}{% endblock content %}
       </div>
    </body>

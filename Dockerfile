@@ -8,4 +8,8 @@ WORKDIR /code
 COPY Pipfile Pipfile.lock /code/
 RUN pip install pipenv && pipenv install --system
 
+# Required to run manage.py dbshell
+RUN apt-get update
+RUN apt-get --assume-yes install postgresql-client
+
 COPY . /code/

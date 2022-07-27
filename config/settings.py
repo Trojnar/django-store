@@ -28,7 +28,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = env("DJANGO_SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = env("DJANGO_DEBUG")
+DEBUG = env.bool("DJANGO_DEBUG")
 
 ALLOWED_HOSTS = [".herokuapp.com", "localhost", "127.0.0.1"]
 
@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     # Local
     "accounts",
     "pages",
+    "products",
     # External
     "allauth",
     "allauth.account",
@@ -156,3 +157,12 @@ SOCIALACCOUNT_PROVIDERS = {
     }
 }
 ACCOUNT_EMAIL_REQUIRED = True
+
+# EMAIL CONFIG
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+DEFAULT_FROM_EMAIL = env("DJANGO_DEFAULT_FROM_EMAIL")
+EMAIL_HOST = env("DJANGO_EMAIL_HOST")
+EMAIL_HOST_USER = env("DJANGO_EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = env("DJANGO_EMAIL_HOST_PASSWORD")
+EMAIL_PORT = env("DJANGO_EMAIL_PORT")
+EMAIL_USE_TLS = env("DJANGO_EMAIL_USE_TLS")
