@@ -7,14 +7,17 @@
       <div class="container">
         <a href={% url 'home' %}><h1>Store</h1></a>
          {% if user.is_authenticated %}
-         Hi {{ user.email }}
-         <a href={% url 'account_settings' %}>Settings</a>
-         <a href={% url 'account_logout' %}>Log Out</a>
+           Hi {{ user.email }}
+           <a href={% url 'account_settings' %}>Settings</a>
+           <a href={% url 'account_logout' %}>Log Out</a>
          {% else %}
-         <a href={% url 'account_login' %}>Log In</a>
-         <a href={% url 'account_signup' %}>Sign Up</a>
+           <a href={% url 'account_login' %}>Log In</a>
+           <a href={% url 'account_signup' %}>Sign Up</a>
          {% endif %}
-         <a href={% url 'product_list' %}>Store</a>
+           <a href={% url 'product_list' %}>Store</a>
+         {% if user.is_superuser %}
+           <a href={% url 'admin:index' %}>Admin</a>  
+         {% endif %}
          {% block content %}{% endblock content %}
       </div>
    </body>

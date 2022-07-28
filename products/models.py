@@ -4,10 +4,15 @@ import uuid
 
 
 class Product(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    id = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False,
+    )
     name = models.CharField(max_length=200)
     producer = models.CharField(max_length=200)
     price = models.DecimalField(max_digits=6, decimal_places=2)
+    image = models.ImageField(upload_to="product_images/", blank=True)
 
     def __str__(self):
         return self.name

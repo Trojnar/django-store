@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     "accounts",
     "pages",
     "products",
+    "reviews",
     # External
     "allauth",
     "allauth.account",
@@ -137,6 +138,11 @@ STATICFILES_DIRS = [
 ]
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles/")
 
+# MEDIA FILES
+MEDIA_URL = "/media/"
+MEDIA_ROOT = str(BASE_DIR.joinpath("media"))
+
+# AUTHENTICATION
 LOGIN_REDIRECT_URL = "home"
 LOGOUT_REDIRECT_URL = "home"
 

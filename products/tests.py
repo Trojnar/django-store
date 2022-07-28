@@ -32,4 +32,5 @@ class ProductTests(TestCase):
         no_response = self.client.get("/products/0/")
         self.assertEqual(no_response.status_code, 404)
         self.assertContains(response, "Hoe", status_code=200)
+        self.assertContains(response, "Universe")
         self.assertTemplateUsed("product_details.html")
