@@ -8,7 +8,7 @@ class ReviewTest(TestCase):
     def setUp(self):
         self.user = get_user_model().objects.create_user(
             username="reviewuser",
-            emal="test@testmail.com",
+            email="test@testmail.com",
             password="testpassword123",
         )
         self.product = Product.objects.create(

@@ -42,7 +42,7 @@ class SignupPageTests(TestCase):
         self.url = reverse("account_signup")
         self.response = self.client.get(self.url)
 
-        self.response_pst_crrct = self.client.post(
+        self.response_pswrd_crrct = self.client.post(
             self.url,
             data={
                 "email": "testmail@test.com",
@@ -52,7 +52,7 @@ class SignupPageTests(TestCase):
             },
         )
 
-        self.response_pst_incrrct = self.client.post(
+        self.response_pswrd_incrrct = self.client.post(
             self.url,
             data={
                 "email": "testmail2@test.com",
@@ -75,18 +75,17 @@ class SignupPageTests(TestCase):
         self.assertTemplateUsed(self.response, "account/signup.html")
 
     def test_create_user_status_code(self):
-        self.assertEqual(self.response_pst_crrct.status_code, 302)
+        self.assertEqual(self.response_pswrd_crrct.status_code, 302)
 
     def test_create_user_with_wrong_passwod_confirmation(self):
-        print("-")
-        print(self.response_pst_crrct.request)
+        # url redirection "/" ????????????
         self.assertContains(
-            self.response_pst_incrrct,
+            self.response_pswrd_incrrct,
             "You must type the same password each time.",
             status_code=200,
         )
 
-    def test_user_created_db(self):
+    def test_user_created_in_db(self):
         self.assertTrue(get_user_model().objects.filter(username="test_user").exists())
 
     def test_incorrect_data_user_created_db(self):
@@ -111,3 +110,53 @@ class SignupPageTests(TestCase):
     def test_signup_view(self):
         view = resolve("/accounts/signup/")
         self.assertEqual(view.func.__name__, SignupView.as_view().__name__)
+
+
+class AccountSettingsViewTest(TestCase):
+    def setUp(self):
+        self.user = get_user_model().objects.create_user(
+            username="casualuser", email="casualuser@email.com", password="testpass123"
+        )
+        self.is_logged_in = self.client.login(
+            username="casualuser", password="testpass123"
+        )
+
+    def test_for_logged_in_user(self):
+        self.is_logged_in = self.client.login(
+            username="casualuser", password="testpass123"
+        )
+        self.assertTrue(self.is_logged_in)
+        response = self.client.get(reverse("account_settings"))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "account/settings.html")
+        self.assertContains(
+            response,
+            '<a href="%s">Change password</a>' % reverse("account_change_password"),
+            html=True,
+        )
+        self.assertContains(
+            response,
+            '<a href="%s">Reset password</a>' % reverse("account_reset_password"),
+            html=True,
+        )
+        self.assertContains(
+            response,
+            '<a href="%s">Manage e-mail</a>' % reverse("account_email"),
+            html=True,
+        )
+        self.assertContains(
+            response,
+            '<a href="%s">Manage socials</a>' % reverse("socialaccount_connections"),
+            html=True,
+        )
+
+    def test_for_not_logged_in_user(self):
+        self.client.logout()
+        response = self.client.get(reverse("account_settings"))
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(
+            response,
+            "%s?next=/accounts/settings/" % reverse("account_login"),
+        )
+        response = self.client.get(reverse("account_login"))
+        self.assertContains(response, "Log In")

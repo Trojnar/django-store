@@ -14,7 +14,10 @@
            <a href={% url 'account_login' %}>Log In</a>
            <a href={% url 'account_signup' %}>Sign Up</a>
          {% endif %}
-           <a href={% url 'product_list' %}>Store</a>
+         <a href={% url 'product_list' %}>Store</a>
+         <form action="{% url 'search_result' %}" method="get">
+          <input name="keyword" type="text" placeholder="Search...">
+         </form>
          {% if user.is_superuser %}
            <a href={% url 'admin:index' %}>Admin</a>  
          {% endif %}

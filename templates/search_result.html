@@ -1,0 +1,17 @@
+{% extends '_base.html' %}
+
+{% block title %} Search {% endblock title %}
+
+{% block content %}
+    <h1>Result:</h1>
+    {% if search_result %}
+        {% for result in search_result %}
+        <br> {{result.name}}
+        <br> {{result.producer}}
+        <br> {{result.price}}
+        <br> -------------------------------
+        {% endfor %}
+    {% else %}
+        No results to show.
+    {% endif%}
+{% endblock content %}

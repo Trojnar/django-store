@@ -34,3 +34,8 @@ class ProductTests(TestCase):
         self.assertContains(response, "Hoe", status_code=200)
         self.assertContains(response, "Universe")
         self.assertTemplateUsed("product_details.html")
+
+    def test_product_list_for_logged_out_user(self):
+        self.client.logout()
+        response = self.client.get(reverse("product_list"))
+        self.assertEqual(response.status_code, 200)

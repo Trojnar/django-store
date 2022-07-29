@@ -3,6 +3,7 @@ from django.views.generic import TemplateView
 from .models import CustomUser
 from .forms import CustomUserCreationForm
 from django.urls import reverse_lazy
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 
 class SignUpView(CreateView):
@@ -12,5 +13,5 @@ class SignUpView(CreateView):
     success_url = reverse_lazy("home")
 
 
-class AccountSettingsView(TemplateView):
+class AccountSettingsView(LoginRequiredMixin, TemplateView):
     template_name = "account/settings.html"
