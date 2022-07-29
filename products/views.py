@@ -29,39 +29,37 @@ class SearchResultView(TemplateView):
         return context
 
     def search(self, phrase):
-        results = {"title_match": [], "producer_match": []}
-        phrase = phrase.split(" ")
-        for word in phrase:
-            results["title_match"].append(
-                Product.objects.all().filter(name__icontains=word)
-            )
-            results["producer_match"].append(
-                Product.objects.all().filter(producer__icontains=word)
-            )
+        # Dictionary with field names to search in and priority rate as keys and list
+        # to store matches. Priority of search result display is sum of sum of matches
+        # in fields. Sum in fields is multiplied by priority rate.
+        fields = {("name", 1.0): [], ("producer", 1.2): []}
 
-        result_title = list(chain.from_iterable(results["title_match"]))
-        result_producer = list(chain.from_iterable(results["producer_match"]))
-        title_count_matches = {}
-        for result in result_title:
-            title_count_matches[result] = result_title.count(result)
-        producer_count_matches = {}
-        for result in result_producer:
-            producer_count_matches[result] = result_producer.count(result)
-        producer_discount = 1.2
-
-        for key in producer_count_matches.keys():
-            if key not in title_count_matches.keys():
-                title_count_matches[key] = (
-                    producer_discount * producer_count_matches[key]
-                )
-            else:
-                title_count_matches[key] += (
-                    producer_discount * producer_count_matches[key]
+        for word in phrase.split():
+            for key in fields.keys():
+                fields[key].append(
+                    Product.objects.all().filter(**{f"{key[0]}__icontains": word})
                 )
 
-        # sorting dictionary by
-        sorted_tuples = sorted(
-            title_count_matches.items(), key=lambda item: item[1], reverse=True
-        )
+        # Count match for each field, replace matches in fields dict to matches count.
+        # Count is multiplied by priority rate.
+        for key in fields.keys():
+            temp_dict = {}
+            result_l = list(chain.from_iterable(fields[key]))
+            for result in result_l:
+                temp_dict[result] = result_l.count(result) * key[1]
+            fields[key] = temp_dict
+
+        # Sum of counts for each object.
+        result = {}
+        for queryset in fields.values():
+            for key, value in queryset.items():
+                if key in result:
+                    result[key] += value
+                else:
+                    result[key] = value
+
+        # sorting dictionary by value
+        sorted_tuples = sorted(result.items(), key=lambda item: item[1], reverse=True)
         sorted_dict = {k: v for k, v in sorted_tuples}
+
         return sorted_dict.keys()
