@@ -16,7 +16,7 @@
          {% endif %}
          <a href={% url 'product_list' %}>Store</a>
          <form action="{% url 'search_result' %}" method="get">
-          <input name="keyword" type="text" placeholder="Search...">
+          <input name="phrase" type="text" placeholder="Search...">
          </form>
          {% if user.is_superuser %}
            <a href={% url 'admin:index' %}>Admin</a>  
