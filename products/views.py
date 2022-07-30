@@ -1,9 +1,10 @@
 from django.views.generic import ListView, DetailView, TemplateView
+from django.db.models import Prefetch
 from .models import Product
+from reviews.models import Review
 
 # from django.contrib.auth.mixins import PermissionRequiredMixin
 from itertools import chain
-from django.db.models import Q
 
 
 class ProductListView(ListView):
@@ -14,6 +15,12 @@ class ProductListView(ListView):
 class ProductDetailsView(DetailView):
     model = Product
     template_name = "product_details.html"
+
+    def get_object(self, queryset=None):
+        queryset = Product.objects.prefetch_related(
+            Prefetch("reviews", Review.objects.select_related("author"))
+        )
+        return super().get_object(queryset)
 
 
 class SearchResultView(TemplateView):

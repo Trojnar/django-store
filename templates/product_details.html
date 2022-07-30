@@ -11,7 +11,10 @@
     <br> {{ product.price }}
     <ul>
     {% for review in product.reviews.all %}
-        <li>{{ review.review }} ~{{review.author}}</li>
+        <li>
+            {{ review.review }} 
+            ~{{review.author}}
+        </li>
     {% endfor %}
     </ul>
 {% endblock content %}

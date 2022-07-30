@@ -14,6 +14,7 @@ from pathlib import Path
 from environs import Env
 import os
 
+
 env = Env()
 env.read_env()
 
@@ -49,6 +50,7 @@ INSTALLED_APPS = [
     "products",
     "reviews",
     # External
+    "debug_toolbar",
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
@@ -64,6 +66,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "debug_toolbar.middleware.DebugToolbarMiddleware",
 ]
 
 ROOT_URLCONF = "config.urls"
@@ -172,3 +175,9 @@ EMAIL_HOST_USER = env("DJANGO_EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = env("DJANGO_EMAIL_HOST_PASSWORD")
 EMAIL_PORT = env("DJANGO_EMAIL_PORT")
 EMAIL_USE_TLS = env("DJANGO_EMAIL_USE_TLS")
+
+
+import socket
+
+hostname, _, ips = socket.gethostbyname_ex(socket.gethostname())
+INTERNAL_IPS = [ip[:-1] + "1" for ip in ips]
