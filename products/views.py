@@ -21,9 +21,9 @@ class SearchResultView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        keyword = self.request.GET.get("keyword", None)
-        if keyword:
-            queryset = self.search(keyword)
+        phrase = self.request.GET.get("phrase", None)
+        if phrase:
+            queryset = self.search(phrase)
             context["search_result"] = queryset
 
         return context
