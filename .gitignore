@@ -23,4 +23,4 @@ environment
 staticfiles/
 media
 todo.txt
-testdb.py
+populatedb.py

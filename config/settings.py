@@ -59,9 +59,11 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    "django.middleware.cache.UpdateCacheMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    "django.middleware.cache.FetchFromCacheMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
-    "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
@@ -175,6 +177,18 @@ EMAIL_HOST_USER = env("DJANGO_EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = env("DJANGO_EMAIL_HOST_PASSWORD")
 EMAIL_PORT = env("DJANGO_EMAIL_PORT")
 EMAIL_USE_TLS = env("DJANGO_EMAIL_USE_TLS")
+
+# Cache config per-site
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.memcached.PyLibMCCache",
+        "LOCATION": "172.21.0.4:11211",
+        # "LOCATION": "127.0.0.1:11211",
+    }
+}
+CACHE_MIDDLEWARE_ALIAS = "default"
+CACHE_MIDDLEWARE_SECONDS = 604800  # 1 week
+CACHE_MIDDLEWARE_KEY_PREFIX = ""
 
 
 import socket
