@@ -190,7 +190,7 @@ EMAIL_USE_TLS = env("DJANGO_EMAIL_USE_TLS")
 CACHES = {
     "default": {
         "BACKEND": "django.core.cache.backends.memcached.PyLibMCCache",
-        "LOCATION": "172.25.0.3:11211",
+        "LOCATION": env("MEMCACHE_LOCATION"),
         # "LOCATION": "127.0.0.1:11211",
     }
 }
@@ -200,17 +200,21 @@ CACHE_MIDDLEWARE_KEY_PREFIX = ""
 
 # Security cofig
 # security.W016
-CSRF_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = env("DJANGO_CSRF_COOKIE_SECURE", default=False)
 # security.W012
-SESSION_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = env("DJANGO_SESSION_COOKIE_SECURE", default=False)
 # security.W008
-SECURE_SSL_REDIRECT = True
+SECURE_SSL_REDIRECT = env("DJANGO_SECURE_SSL_REDIRECT", default=False)
 # security.W004
-SECURE_HSTS_SECONDS = 31536000  # One year in seconds
+SECURE_HSTS_SECONDS = env(
+    "DJANGO_SECURE_HSTS_SECONDS", default=None
+)  # One year in seconds
 # Another security settings
-SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-SECURE_HSTS_PRELOAD = True
-SECURE_CONTENT_TYPE_NOSNIFF = True
+SECURE_HSTS_INCLUDE_SUBDOMAINS = env(
+    "DJANGO_SECURE_HSTS_INCLUDE_SUBDOMAINS", default=False
+)
+SECURE_HSTS_PRELOAD = env("DJANGO_SECURE_HSTS_PRELOAD", default=False)
+SECURE_CONTENT_TYPE_NOSNIFF = env("DJANGO_SECURE_CONTENT_TYPE_NOSNIFF", default=False)
 
 # pk autofield
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
