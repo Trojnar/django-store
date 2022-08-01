@@ -9,7 +9,6 @@ https://docs.djangoproject.com/en/3.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.1/ref/settings/
 """
-
 from pathlib import Path
 from environs import Env
 import os
@@ -51,12 +50,15 @@ INSTALLED_APPS = [
     "reviews",
     # External
     "debug_toolbar",
+    "django_extensions",
+    "compressor",
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
     "allauth.socialaccount.providers.google",
     # "allauth.socialaccount.providers.facebook",
 ]
+
 
 MIDDLEWARE = [
     "django.middleware.cache.UpdateCacheMiddleware",
@@ -142,6 +144,12 @@ STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles/")
+STATICFILES_FINDERS = (
+    "django.contrib.staticfiles.finders.FileSystemFinder",
+    "django.contrib.staticfiles.finders.AppDirectoriesFinder",
+    # other finders..
+    "compressor.finders.CompressorFinder",
+)
 
 # MEDIA FILES
 MEDIA_URL = "/media/"
@@ -182,14 +190,30 @@ EMAIL_USE_TLS = env("DJANGO_EMAIL_USE_TLS")
 CACHES = {
     "default": {
         "BACKEND": "django.core.cache.backends.memcached.PyLibMCCache",
-        "LOCATION": "172.21.0.4:11211",
+        "LOCATION": "172.25.0.3:11211",
         # "LOCATION": "127.0.0.1:11211",
     }
 }
 CACHE_MIDDLEWARE_ALIAS = "default"
-CACHE_MIDDLEWARE_SECONDS = 604800  # 1 week
+CACHE_MIDDLEWARE_SECONDS = 6
 CACHE_MIDDLEWARE_KEY_PREFIX = ""
 
+# Security cofig
+# security.W016
+CSRF_COOKIE_SECURE = True
+# security.W012
+SESSION_COOKIE_SECURE = True
+# security.W008
+SECURE_SSL_REDIRECT = True
+# security.W004
+SECURE_HSTS_SECONDS = 31536000  # One year in seconds
+# Another security settings
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+
+# pk autofield
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 import socket
 

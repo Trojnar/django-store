@@ -12,7 +12,7 @@ services:
       - db
       - memcached
     env_file:
-      - ./config/environment/variables.env
+      - ./config/environment/variables-prod.env
   db:
     image: postgres:14
     volumes:
