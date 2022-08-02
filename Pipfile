@@ -13,6 +13,8 @@ django-debug-toolbar = "==3.5"
 pylibmc = "*"
 django-extensions = "*"
 django-compressor = "*"
+whitenoise = "==6.2.0"
+gunicorn = "==20.1.0"
 
 [dev-packages]
 
