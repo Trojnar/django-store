@@ -28,7 +28,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = env("DJANGO_SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = env.bool("DJANGO_DEBUG")
+DEBUG = env.bool("DJANGO_DEBUG", default=False)
 
 ALLOWED_HOSTS = [".herokuapp.com", "localhost", "127.0.0.1"]
 
@@ -200,21 +200,23 @@ CACHE_MIDDLEWARE_KEY_PREFIX = ""
 
 # Security cofig
 # security.W016
-CSRF_COOKIE_SECURE = env("DJANGO_CSRF_COOKIE_SECURE", default=False)
+CSRF_COOKIE_SECURE = env.bool("DJANGO_CSRF_COOKIE_SECURE", default=False)
 # security.W012
-SESSION_COOKIE_SECURE = env("DJANGO_SESSION_COOKIE_SECURE", default=False)
+SESSION_COOKIE_SECURE = env.bool("DJANGO_SESSION_COOKIE_SECURE", default=False)
 # security.W008
-SECURE_SSL_REDIRECT = env("DJANGO_SECURE_SSL_REDIRECT", default=False)
+SECURE_SSL_REDIRECT = env.bool("DJANGO_SECURE_SSL_REDIRECT", default=False)
 # security.W004
-SECURE_HSTS_SECONDS = env(
+SECURE_HSTS_SECONDS = env.int(
     "DJANGO_SECURE_HSTS_SECONDS", default=None
 )  # One year in seconds
 # Another security settings
-SECURE_HSTS_INCLUDE_SUBDOMAINS = env(
+SECURE_HSTS_INCLUDE_SUBDOMAINS = env.bool(
     "DJANGO_SECURE_HSTS_INCLUDE_SUBDOMAINS", default=False
 )
-SECURE_HSTS_PRELOAD = env("DJANGO_SECURE_HSTS_PRELOAD", default=False)
-SECURE_CONTENT_TYPE_NOSNIFF = env("DJANGO_SECURE_CONTENT_TYPE_NOSNIFF", default=False)
+SECURE_HSTS_PRELOAD = env.bool("DJANGO_SECURE_HSTS_PRELOAD", default=False)
+SECURE_CONTENT_TYPE_NOSNIFF = env.bool(
+    "DJANGO_SECURE_CONTENT_TYPE_NOSNIFF", default=False
+)
 
 # pk autofield
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"

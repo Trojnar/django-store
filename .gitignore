@@ -24,4 +24,4 @@ staticfiles/
 media
 todo.txt
 populatedb.py
-docker-compose-prod
+docker-compose-prod.yml
