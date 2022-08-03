@@ -189,12 +189,12 @@ EMAIL_HOST_PASSWORD = env("DJANGO_EMAIL_HOST_PASSWORD")
 EMAIL_PORT = env("DJANGO_EMAIL_PORT")
 EMAIL_USE_TLS = env("DJANGO_EMAIL_USE_TLS")
 
-# Cache config per-site
+# CACHES SETTINGS
 CACHES = {
     "default": {
-        "BACKEND": "django.core.cache.backends.memcached.PyLibMCCache",
-        "LOCATION": env("MEMCACHE_LOCATION"),
-        # "LOCATION": "127.0.0.1:11211",
+        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "LOCATION": "redis://" + env("CACHES_LOCATION"),
+        "OPTIONS": {},
     }
 }
 CACHE_MIDDLEWARE_ALIAS = "default"
