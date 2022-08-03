@@ -3,14 +3,15 @@ version: '3.9'
 services:
   web:
     build: .
-    command: python /code/manage.py runserver 0.0.0.0:8000
+    # command: python /code/manage.py runserver 0.0.0.0:8000
+    command: gunicorn config.wsgi -b 0.0.0.0:8000 --log-level debug
     volumes:
       - .:/code
     ports:
       - 8000:8000
     depends_on:
       - db
-      - memcached
+      - redis
     env_file:
       - ./config/environment/variables.env
   db:
@@ -19,13 +20,7 @@ services:
       - postgres_data:/var/lib/postgresql/data/
     environment:
       - "POSTGRES_HOST_AUTH_METHOD=trust"
-  memcached:
-    image: memcached:1.6.15
-    ports:
-      - "11211:11211"
-    entrypoint:
-      - memcached
-      - -m 64
-      - -vv
+  redis:
+    image: redis:7.0.4
 volumes:
   postgres_data:

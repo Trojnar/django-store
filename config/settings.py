@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
+    "whitenoise.runserver_nostatic",
     "django.contrib.staticfiles",
     "django.contrib.sites",
     # Local
@@ -65,6 +66,7 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.cache.FetchFromCacheMiddleware",
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -150,6 +152,7 @@ STATICFILES_FINDERS = (
     # other finders..
     "compressor.finders.CompressorFinder",
 )
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 # MEDIA FILES
 MEDIA_URL = "/media/"
@@ -186,12 +189,12 @@ EMAIL_HOST_PASSWORD = env("DJANGO_EMAIL_HOST_PASSWORD")
 EMAIL_PORT = env("DJANGO_EMAIL_PORT")
 EMAIL_USE_TLS = env("DJANGO_EMAIL_USE_TLS")
 
-# Cache config per-site
+# CACHES SETTINGS
 CACHES = {
     "default": {
-        "BACKEND": "django.core.cache.backends.memcached.PyLibMCCache",
-        "LOCATION": env("MEMCACHE_LOCATION"),
-        # "LOCATION": "127.0.0.1:11211",
+        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "LOCATION": "redis://" + env("CACHES_LOCATION"),
+        "OPTIONS": {},
     }
 }
 CACHE_MIDDLEWARE_ALIAS = "default"
