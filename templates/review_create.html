@@ -1,0 +1,14 @@
+{% extends '_base.html' %}
+
+{% block title %} Create Reviews {% endblock title %}
+
+{% block content %}
+
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <input type="submit" value="Save">
+</form>
+
+
+{% endblock content %}

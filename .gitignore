@@ -23,6 +23,7 @@ environment
 staticfiles/
 media
 todo.txt
+notes.txt
 populatedb.py
 docker-compose-prod.yml
 heroku.yml
