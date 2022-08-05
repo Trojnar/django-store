@@ -6,10 +6,12 @@
     {% if product.image %}
         <br><img height=300 src="{{ product.image.url}}" alt="{{ product.title }}">
     {% endif %}
-    <br> {{ product.name }}
-    <br> {{ product.producer }}
-    <br> {{ product.price }}
-    <br>
+    <form action="" method="post">
+      <br> {{ product.name }} <input type="submit" value="edit">
+      <br> {{ product.producer }} <input type="submit" value="edit">
+      <br> {{ product.price }} <input type="submit" value="edit">
+      <br>
+    </form>
     {% if user.is_authenticated %}
       <a href="{% url 'review_create' product.pk %}" type='submit'>Review:</a>
       <form action="" method="post">
