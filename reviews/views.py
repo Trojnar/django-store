@@ -17,7 +17,6 @@ class CreateReviewView(LoginRequiredMixin, CreateView):
         self.object = None
         form = self.get_form()
         if self.request.user.is_authenticated:
-            print("im here")
             if form.is_valid():
                 self.object = form.save(commit=False)
                 self.object.product = Product.objects.get(pk=kwargs["pk"])
