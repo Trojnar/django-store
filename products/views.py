@@ -1,7 +1,11 @@
-from django.views.generic import ListView, DetailView, TemplateView
+from django.urls import reverse
+from django.views.generic import ListView, DetailView, TemplateView, CreateView
 from django.db.models import Prefetch
+from django.contrib.auth.mixins import PermissionRequiredMixin
+
 from .models import Product
 from reviews.models import Review
+from reviews.views import CreateReviewView
 
 # from django.contrib.auth.mixins import PermissionRequiredMixin
 from itertools import chain
@@ -21,6 +25,17 @@ class ProductDetailsView(DetailView):
             Prefetch("reviews", Review.objects.select_related("author"))
         )
         return super().get_object(queryset)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["new_review"] = "You can enter your review here. "
+        return context
+
+    def post(self, request, *args, **kwargs):
+        """Create review using CreateReviewView instance"""
+        view = CreateReviewView()
+        view.request = request
+        return view.post(self, request, *args, **kwargs)
 
 
 class SearchResultView(TemplateView):
@@ -70,3 +85,10 @@ class SearchResultView(TemplateView):
         sorted_dict = {k: v for k, v in sorted_tuples}
 
         return sorted_dict.keys()
+
+
+class CreateProductView(PermissionRequiredMixin, CreateView):
+    model = Product
+    template_name = "product_create.html"
+    fields = ("name", "producer", "price")
+    permission_required = "products.add_product"

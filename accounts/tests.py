@@ -3,6 +3,7 @@ from django.contrib.auth import get_user_model
 from django.urls import reverse, resolve
 from .models import CustomUser
 from allauth.account.views import SignupView
+import time
 
 
 class CustomUserTests(TestCase):
@@ -42,26 +43,6 @@ class SignupPageTests(TestCase):
         self.url = reverse("account_signup")
         self.response = self.client.get(self.url)
 
-        self.response_pswrd_crrct = self.client.post(
-            self.url,
-            data={
-                "email": "testmail@test.com",
-                "username": "test_user",
-                "password1": "test_password",
-                "password2": "test_password",
-            },
-        )
-
-        self.response_pswrd_incrrct = self.client.post(
-            self.url,
-            data={
-                "email": "testmail2@test.com",
-                "username": "test_user2",
-                "password1": "test_password",
-                "password2": "different_password",
-            },
-        )
-
     def test_signup_status_code(self):
         self.assertEqual(self.response.status_code, 200)
 
@@ -75,18 +56,36 @@ class SignupPageTests(TestCase):
         self.assertTemplateUsed(self.response, "account/signup.html")
 
     def test_create_user_status_code(self):
-        self.assertEqual(self.response_pswrd_crrct.status_code, 302)
+        self.client.logout()
+        response_pswrd_crrct = self.client.post(
+            self.url,
+            data={
+                "email": "testmail@test.com",
+                "username": "test_user",
+                "password1": "test_password",
+                "password2": "test_password",
+            },
+        )
+        self.assertEqual(response_pswrd_crrct.status_code, 302)
+        self.assertTrue(get_user_model().objects.filter(username="test_user").exists())
 
     def test_create_user_with_wrong_passwod_confirmation(self):
-        # url redirection "/" ????????????
+        self.client.logout()
+        response_psswrd_incrrct = self.client.post(
+            self.url,
+            data={
+                "email": "testmail2@test.com",
+                "username": "test_user2",
+                "password1": "test_password",
+                "password2": "different_password",
+            },
+            follow=True,
+        )
         self.assertContains(
-            self.response_pswrd_incrrct,
+            response_psswrd_incrrct,
             "You must type the same password each time.",
             status_code=200,
         )
-
-    def test_user_created_in_db(self):
-        self.assertTrue(get_user_model().objects.filter(username="test_user").exists())
 
     def test_incorrect_data_user_created_db(self):
         self.assertFalse(

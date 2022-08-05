@@ -21,6 +21,9 @@
          {% if user.is_superuser %}
            <a href={% url 'admin:index' %}>Admin</a>  
          {% endif %}
+         {% if user.is_staff %}
+           <a href={% url 'product_create' %}>Create Product</a>  
+         {% endif %}
          {% block content %}{% endblock content %}
       </div>
    </body>
