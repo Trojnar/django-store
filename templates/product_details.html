@@ -4,14 +4,37 @@
 
 {% block content %}
     {% if product.image %}
-        <br><img height=300 src="{{ product.image.url}}" alt="{{ product.title }}">
+      <br><img height=300 src="{{ product.image.url}}" alt="{{ product.title }}">
     {% endif %}
-    <form action="" method="post">
-      <br> {{ product.name }} <input type="submit" value="edit">
-      <br> {{ product.producer }} <input type="submit" value="edit">
-      <br> {{ product.price }} <input type="submit" value="edit">
+      <form method="post">
+        {% csrf_token %}
+        <br> {{ product.name }}
+        {% if edit == 'name' %}
+            <a href={% url 'product_details' pk=product.pk %}>change</a>
+            <a href={% url 'product_details' pk=product.pk %}>cancel</a>
+        {% else %}
+            <a href={% url 'product_edit' pk=product.pk edit='name' %}>edit</a>
+        {% endif %}
+
+        <br> {{ product.producer }}
+        {% if edit == 'producer' %}
+            <a href={% url 'product_details' pk=product.pk %}>change</a>
+            <a href={% url 'product_details' pk=product.pk %}>cancel</a>
+        {% else %}
+            <a href={% url 'product_edit' pk=product.pk edit='producer' %}>edit</a>
+        {% endif %}
+
+        <br> {{ product.price }}
+        {% if edit == 'price' %}
+            <a href={% url 'product_details' pk=product.pk %}>change</a>
+            <a href={% url 'product_details' pk=product.pk %}>cancel</a>
+        {% else %}
+            <a href={% url 'product_edit' pk=product.pk edit='price' %}>edit</a>
+        {% endif %}
+      </form>
+
       <br>
-    </form>
+
     {% if user.is_authenticated %}
       <a href="{% url 'review_create' product.pk %}" type='submit'>Review:</a>
       <form action="" method="post">
