@@ -1,7 +1,12 @@
+from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.views.generic import ListView, DetailView, TemplateView, CreateView
 from django.db.models import Prefetch
-from django.contrib.auth.mixins import PermissionRequiredMixin
+from django.contrib.auth.mixins import (
+    PermissionRequiredMixin,
+    UserPassesTestMixin,
+    LoginRequiredMixin,
+)
 from django import forms
 
 from .models import Product
@@ -35,41 +40,10 @@ class ProductDetailsView(DetailView):
         view.request = request
         return view.post(self, request, *args, **kwargs)
 
-    # def get(self, request, *args, **kwargs):
-    #     # Takes get value of field to edit, and set keyword argument 'field' with form
-    #     # field that the value points.
-    #     # self.editable = (
-    #     #     "name",
-    #     #     "producer",
-    #     #     "price",
-    #     # )
-    #     # try:
-    #     #     if kwargs["edit"] in self.editable:
-    #     #         self.edit = kwargs["edit"]
-    #     # except AttributeError:
-    #     #     pass
-    #     # except KeyError:
-    #     #     pass
-
-    #     return super().get(self, request, *args, **kwargs)
-
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["new_review"] = "You can enter your review here. "
-
-        # product_dict = forms.model_to_dict(self.object)
-        # product_dict["pk"] = self.object.pk
-        # try:
-        #     form = ProductForm()
-        #     product_dict[self.edit] = form.fields[self.edit].widget.render(
-        #         self.edit, product_dict[self.edit]
-        #     )
-        # except AttributeError:
-        #     pass
-        # except KeyError:
-        #     pass
-        # context["product"] = product_dict
-
+        context["reviews"] = self.object.reviews
         return context
 
 
@@ -129,14 +103,17 @@ class CreateProductView(PermissionRequiredMixin, CreateView):
     form_class = ProductForm
 
 
-class EditProductDetailsView(ProductDetailsView):
+class EditProductDetailsView(
+    LoginRequiredMixin, UserPassesTestMixin, ProductDetailsView
+):
+    editable = (
+        "name",
+        "producer",
+        "price",
+    )
+
     def get(self, request, *args, **kwargs):
         # Pass get's 'edit' value to instance variable self.edit.
-        self.editable = (
-            "name",
-            "producer",
-            "price",
-        )
 
         if kwargs["edit"] in self.editable:
             self.edit = kwargs["edit"]
@@ -149,18 +126,38 @@ class EditProductDetailsView(ProductDetailsView):
 
         # Change field in product dict, choosen by get's variable self.edit,
         # to form's widget. Pass it to the context.
+        form = ProductForm()
         product_dict = forms.model_to_dict(self.object)
         product_dict["pk"] = self.object.pk
-        form = ProductForm()
         product_dict[self.edit] = form.fields[self.edit].widget.render(
             self.edit, product_dict[self.edit]
         )
         context["product"] = product_dict
-
+        context["reviews"] = self.object.reviews
         context["edit"] = self.edit
 
         return context
 
     def post(self, request, *args, **kwargs):
+        # Get product and choosen field to edit from get, get post data, create dict
+        # with product details, create form and validate input. Override database data
+        # in choosen kwargs["edit"] field.
+        self.object = Product.objects.get(pk=kwargs["pk"])
+        input = request.POST[kwargs["edit"]]
+        edit = kwargs["edit"]
+        if edit in self.editable:
+            product_dict = forms.model_to_dict(self.object)
+            product_dict[edit] = input
+            form = ProductForm(product_dict)
+            if form.is_valid():
+                new_record = form.save(commit=False)
+                exec("self.object." + edit + " = " + "new_record." + edit)
+                self.object.save()
+            return HttpResponseRedirect(
+                reverse("product_details", kwargs={"pk": kwargs["pk"]})
+            )
+        else:
+            return self.render_to_response(self.get_context_data(form=form))
 
-        return super().get(self, request, *args, **kwargs)
+    def test_func(self):
+        return self.request.user.is_staff
