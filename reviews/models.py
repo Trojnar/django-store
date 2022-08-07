@@ -2,8 +2,15 @@ from django.db import models
 from products.models import Product
 from django.contrib.auth import get_user_model
 
+# import uuid
+
 
 class Review(models.Model):
+    # pk = models.UUIDField(
+    #     primary_key=True,
+    #     default=uuid.uuid4,
+    #     editable=False,
+    # )
     product = models.ForeignKey(
         Product,
         on_delete=models.CASCADE,
