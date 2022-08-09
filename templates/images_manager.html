@@ -1,0 +1,15 @@
+{% extends '_base.html' %}
+
+{% block title %} Images {% endblock title %}
+
+{% block content %}
+    <ul>
+    {% for image in object_list%}
+        <li><br><img height=300 src="{{ image.image.url }}">
+        <a href={% url "image_delete" image.pk %}>edit</a></li>
+    {% empty %}
+        <li> No photos left. </li>
+    {% endfor %}
+    </ul>
+
+{% endblock content %}

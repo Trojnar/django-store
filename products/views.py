@@ -55,7 +55,7 @@ class ProductDetailsView(DetailView):
         return context
 
 
-class CreateProductView(PermissionRequiredMixin, CreateView):
+class ProductCreateView(PermissionRequiredMixin, CreateView):
     model = Product
     template_name = "product_create.html"
     permission_required = "products.add_product"
@@ -79,7 +79,14 @@ class CreateProductView(PermissionRequiredMixin, CreateView):
             return super().form_valid(form)
 
 
-class UploadImages(FormView):
+class ProductUpdateView(UpdateView):
+    model = Product
+    template_name = "product_create.html"
+    from_class = ProductFormWithImage
+    fields = ("name", "producer", "price", "image")
+
+
+class ImagesUpload(FormView):
     form_class = ImageForm
     template_name = "upload_images.html"  # Replace with your template.
     # Replace with your URL or reverse().
@@ -94,11 +101,17 @@ class UploadImages(FormView):
         return HttpResponseRedirect(reverse("image_upload"))
 
 
-class UpdateProductView(UpdateView):
-    model = Product
-    template_name = "product_create.html"
-    from_class = ProductFormWithImage
-    fields = ("name", "producer", "price", "image")
+class ImageDeleteView(FormView):
+    model = Image
+
+    def get_success_url(self):
+        self.success_url = reverse("images_manager", self.object.product.pk)
+        return super().get_success_url(self)
+
+
+class ImageManagerView(ListView):
+    model = Image
+    template_name = "images_manager.html"
 
 
 class EditProductDetailsView(
@@ -183,7 +196,7 @@ class EditProductDetailsView(
         return authorized
 
 
-# TODO: user author can edit
+# TODO: only author can edit review
 class EditReviewProductDetailsView(LoginRequiredMixin, ProductDetailsView):
     editable = ("review",)
 

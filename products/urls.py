@@ -1,14 +1,14 @@
 from django.urls import path
 from .views import (
-    CreateProductView,
+    ProductCreateView,
     ProductListView,
     ProductDetailsView,
     SearchResultView,
-    CreateProductView,
     EditProductDetailsView,
     EditReviewProductDetailsView,
-    UpdateProductView,
-    UploadImages,
+    ProductUpdateView,
+    ImagesUpload,
+    ImageManagerView,
 )
 
 urlpatterns = [
@@ -31,7 +31,15 @@ urlpatterns = [
         name="review_details_edit",
     ),
     path("search/", SearchResultView.as_view(), name="search_result"),
-    path("create/", CreateProductView.as_view(), name="product_create"),
-    path("update/<uuid:pk>/", UpdateProductView.as_view(), name="product_update"),
-    path("imageupload/", UploadImages.as_view(), name="image_upload"),
+    path("create/", ProductCreateView.as_view(), name="product_create"),
+    path("update/<uuid:pk>/", ProductUpdateView.as_view(), name="product_update"),
+    path("imageupload/", ImagesUpload.as_view(), name="images_upload"),
+    path(
+        "images/<uuid:pk>/",
+        ImageManagerView.as_view(),
+        name="images_manager",
+    ),
+    path(
+        "images/<uuid:pk>/delete/<int:pk>", ImagesUpload.as_view(), name="images_upload"
+    ),
 ]
