@@ -1,13 +1,12 @@
 {% extends '_base.html' %}
 
-{% block title %} Add Product {% endblock title %}
+{% block title %} Update Reviews {% endblock title %}
 
 {% block content %}
 
-<form enctype="multipart/form-data" method="post">
+<form method="post">
     {% csrf_token %}
     {{ form.as_p }}
-    <input name="image" type="file" multiple>
     <input type="submit" value="Save">
 </form>
 

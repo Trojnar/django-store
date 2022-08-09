@@ -68,4 +68,14 @@ class UpdateReviewView(UpdateView):
     form_class = ReviewForm
 
     def get_success_url(self) -> str:
+        print(1)
         return reverse_lazy("product_details", kwargs={"pk": self.object.product.pk})
+
+    def _post(self, request, *args, **kwargs):
+        self.request = request
+        self.args = args
+        self.kwargs = kwargs
+        print(request)
+        print(args)
+        print(kwargs)
+        return super().post(self, self.request, *self.args, **self.kwargs)
