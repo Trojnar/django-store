@@ -130,6 +130,50 @@ class ProductTests(TestCase):
             reverse("product_details", kwargs={"pk": self.product.pk}),
         )
 
+    def test_update_data_on_details_page(self):
+        pass
+
+    def test_photos_display_on_details_page(self):
+        pass
+
+    def test_create_product(self):
+        pass
+
+    def test_create_product_with_images(self):
+        pass
+
+    def test_create_product_as_casual_user(self):
+        pass
+
+    def test_create_product_as_staff_user(self):
+        pass
+
+    def test_template_used_for_create_product_page(self):
+        pass
+
+    def test_edit_review_as_casual_user(self):
+        pass
+
+    def test_edit_review_as_staff_user(self):
+        pass
+
+
+class ImageManager(TestCase):
+    def setUp(self):
+        pass
+
+    def test_use_manager_as_unauthorized_user(self):
+        pass
+
+    def test_delete_image(self):
+        pass
+
+    def test_change_images_order(self):
+        pass
+
+    def test_upload_images(self):
+        pass
+
 
 class SearchResultViewTest(TestCase):
     def setUp(self):

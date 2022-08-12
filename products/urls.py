@@ -9,6 +9,7 @@ from .views import (
     ProductUpdateView,
     ImagesUpload,
     ImageManagerView,
+    ImageDeleteView,
 )
 
 urlpatterns = [
@@ -40,6 +41,8 @@ urlpatterns = [
         name="images_manager",
     ),
     path(
-        "images/<uuid:pk>/delete/<int:pk>", ImagesUpload.as_view(), name="images_upload"
+        "images/<uuid:product_pk>/delete/<int:image_pk>",
+        ImageDeleteView.as_view(),
+        name="image_delete",
     ),
 ]

@@ -4,12 +4,23 @@
 
 {% block content %}
     <ul>
-    {% for image in object_list%}
+    {% for image, form in images.items %}
         <li><br><img height=300 src="{{ image.image.url }}">
-        <a href={% url "image_delete" image.pk %}>edit</a></li>
+        <form method=post>
+            {% csrf_token %}
+            {{form}}
+            <button name='delete' value='delete'> Delete </button>
+            <button name='move_up' value='move_up'> Up </button>
+            <button name='move_down' value='move_down'> Down </button>
+        </li>
+        </form>
     {% empty %}
         <li> No photos left. </li>
     {% endfor %}
     </ul>
-
+    <form  enctype="multipart/form-data" method=post>
+        {% csrf_token %}
+        {{ upload_images_form}}
+        <button name='upload_images' value='upload_images'> Upload </button>
+    </form>    
 {% endblock content %}
