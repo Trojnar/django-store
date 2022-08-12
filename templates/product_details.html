@@ -1,23 +1,50 @@
 {% extends '_base.html' %}
 
-{% block title %} {{product.name}} {% endblock title %}
+{% block title %} Details {% endblock title %}
 
 {% block content %}
-    {% if product.image %}
-        <br><img height=300 src="{{ product.image.url}}" alt="{{ product.title }}">
-    {% endif %}
-    <form action="" method="post">
-      <br> {{ product.name }} <input type="submit" value="edit">
-      <br> {{ product.producer }} <input type="submit" value="edit">
-      <br> {{ product.price }} <input type="submit" value="edit">
+    {% for image in images %}
+      <br><img height=300 src="{{ image.image.url }}" alt="{{ product.title }}">
+      <a href={% url 'product_edit' pk=product.pk edit='image' %}>edit</a>
+    {% endfor %}
+      <form method="post">
+        {% csrf_token %}
+        <br> {{ product.name }}
+        {% if edit == 'name' %}
+            <input type="submit" value="change">
+            <input type="button" onclick="location.href='{% url 'product_details' pk=product.pk %}';" value="cancel" />
+        {% else %}
+        <a href={% url 'product_edit' pk=product.pk edit='name' %}>edit</a>
+        {% endif %}
+
+        <br> {{ product.producer }}
+        {% if edit == 'producer' %}
+            <input type="submit" value="change">
+            <a href={% url 'product_details' pk=product.pk %}></a>
+            <input type="button" onclick="location.href='{% url 'product_details' pk=product.pk %}';" value="cancel" />
+        {% else %}
+            <a href={% url 'product_edit' pk=product.pk edit='producer' %}>edit</a>
+        {% endif %}
+
+        <br> {{ product.price }}
+        {% if edit == 'price' %}
+            <input type="submit" value="change">
+            <input type="button" onclick="location.href='{% url 'product_details' pk=product.pk %}';" value="cancel" />
+        {% else %}
+            <a href={% url 'product_edit' pk=product.pk edit='price' %}>edit</a>
+        {% endif %}
+      </form>
+      <a href={% url 'product_update' pk=product.pk%}>Edit Product</a>
+      <a href={% url 'images_manager' pk=product.pk%}>Manage Images</a>
+
       <br>
-    </form>
+
     {% if user.is_authenticated %}
       <a href="{% url 'review_create' product.pk %}" type='submit'>Review:</a>
       <form action="" method="post">
         {% csrf_token %}
         <input id="review" type="text" name="review" value="{{ new_review }}">
-        <input type="submit" value="OK">
+        <input type="submit" name='add-review' value="OK">
       </form> 
     {% else %} 
       Only logged in users can add reviews. <a href={% url 'account_login' %}>Log In</a> 
@@ -25,10 +52,22 @@
     {% endif %}      
     
     <ul>
-    {% for review in product.reviews.all %}
+    {% for review in reviews %}
         <li>
+          <form method="post">
+            {% csrf_token %}
             {{ review.review }} 
             ~{{review.author}}
+            {% if edit == 'review' and forloop.counter0 == index %}
+
+              <input type="submit" name="edit-review" value="confirm">
+              <input type="button" onclick="location.href='{% url 'product_details' pk=product.pk %}';" value="cancel" />
+            {% else %}
+              {% if user.is_staff or user.pk == review.author.pk%}
+              <a href={% url 'review_details_edit' pk=product.pk edit='review' index=forloop.counter0 %}>edit</a>
+              {% endif %}
+            {% endif %}
+          </form>
         </li>
     {% endfor %}
     </ul>

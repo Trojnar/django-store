@@ -7,7 +7,7 @@
     {% for product in object_list%}
         <li><a href="{{ product.get_absolute_url }}">{{product.name}} - {{product.price}} zł - {{product.producer}}</a></li>
     {% empty %}
-        <li> No products avalivible </li>
+        <li> No products avalivible. </li>
     {% endfor %}
     </ul>
 
