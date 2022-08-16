@@ -1,0 +1,14 @@
+{% extends '_base.html' %}
+
+{% block title %} {{object.name}} {% endblock title %}
+
+{% block content %}
+    <ul>
+    {% for product in categorie.products.all %}
+        <li><a href="{{ product.get_absolute_url }}">{{product.name}} - {{product.price}} zł - {{product.producer}}</a></li>
+    {% empty %}
+        <li> No products avalivible. </li>
+    {% endfor %}
+    </ul>
+
+{% endblock content %}
