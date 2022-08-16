@@ -10,6 +10,12 @@ from .views import (
     ImagesUpload,
     ImageManagerView,
     ImageDeleteView,
+    CategorieListView,
+    CategorieDeleteView,
+    CategorieCreateView,
+    CategorieUpdateView,
+    CategorieDetailsView,
+    CategorieCheckboxView,
 )
 
 urlpatterns = [
@@ -35,14 +41,30 @@ urlpatterns = [
     path("create/", ProductCreateView.as_view(), name="product_create"),
     path("update/<uuid:pk>/", ProductUpdateView.as_view(), name="product_update"),
     path("imageupload/", ImagesUpload.as_view(), name="images_upload"),
+    path("images/<uuid:pk>/", ImageManagerView.as_view(), name="images_manager"),
     path(
-        "images/<uuid:pk>/",
-        ImageManagerView.as_view(),
-        name="images_manager",
-    ),
-    path(
-        "images/<uuid:product_pk>/delete/<int:image_pk>",
+        "images/<uuid:product_pk>/delete/<int:image_pk>/",
         ImageDeleteView.as_view(),
         name="image_delete",
+    ),
+    path("categorie/", CategorieListView.as_view(), name="categorie_list"),
+    path(
+        "categorie/delete/<int:pk>",
+        CategorieDeleteView.as_view(),
+        name="categorie_delete",
+    ),
+    path(
+        "categorie/update/<int:pk>",
+        CategorieUpdateView.as_view(),
+        name="categorie_update",
+    ),
+    path("categorie/create", CategorieCreateView.as_view(), name="categorie_create"),
+    path(
+        "categorie/<int:pk>", CategorieDetailsView.as_view(), name="categorie_details"
+    ),
+    path(
+        "categorie/<int:pk>/checkbox",
+        CategorieCheckboxView.as_view(),
+        name="categorie_checkbox",
     ),
 ]

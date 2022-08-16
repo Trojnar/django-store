@@ -1,0 +1,25 @@
+{% extends '_base.html' %}
+
+{% block title %} {{categorie.name}} {% endblock title %}
+
+{% block content %}
+
+<h1>{{categorie_name}}</h1>
+<form enctype="multipart/form-data" method="post">
+    Addable:
+    {% csrf_token %}
+    {{form_addable}}
+    <input type="hidden" name="categorie.pk" value={{ categorie.pk }}>
+    <br> <input type="submit" name="add_button" value="Add">
+</form>
+<form enctype="multipart/form-data" method="post">
+    Already added:
+    {% csrf_token %}
+    {{form_already_added}}
+    <input type="hidden" name="categorie.pk" value={{ categorie.pk }}>
+    <br> <input type="submit" name="delete_button" value="delete">
+</form>
+
+
+
+{% endblock content %}

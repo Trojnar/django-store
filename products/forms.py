@@ -78,3 +78,15 @@ class ImagesManagerForm(forms.Form):
             }
         )
         super().__init__(*args, **kwargs)
+
+
+class CategorieCheckboxForm(forms.Form):
+    choices = forms.MultipleChoiceField(
+        widget=forms.CheckboxSelectMultiple,
+        choices=[],
+        label="",
+    )
+
+    def __init__(self, choices=[], *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["choices"].choices = choices

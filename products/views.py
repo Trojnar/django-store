@@ -1,5 +1,10 @@
+import uuid
+
+
+import uuid
 from django.http import HttpResponseRedirect
 from django.urls import reverse, reverse_lazy
+from django.shortcuts import render
 from django.views.generic import (
     ListView,
     DetailView,
@@ -16,18 +21,21 @@ from django.contrib.auth.mixins import (
     LoginRequiredMixin,
 )
 from django import forms
+from django.forms import inlineformset_factory
 
-from .models import Product, Image
+from .models import Product, Image, Categorie
 from .forms import (
     ImagesManagerForm,
     ProductForm,
     ProductFormWithImage,
     ImageForm,
     ImagesManagerUploadImageForm,
+    CategorieCheckboxForm,
 )
 from reviews.forms import ReviewForm
 from reviews.models import Review
 from reviews.views import CreateReviewView, UpdateReviewView
+
 
 from itertools import chain
 
@@ -37,6 +45,7 @@ class ProductListView(ListView):
     template_name = "product_list.html"
 
 
+# TODO make it look like CategorieListView or just make custom form
 class ProductDetailsView(DetailView):
     model = Product
     template_name = "product_details.html"
@@ -96,7 +105,7 @@ class ProductUpdateView(UpdateView):
 
 class ImagesUpload(FormView):
     form_class = ImagesManagerUploadImageForm
-    template_name = "upload_images.html"  # Replace with your template.
+    template_name = "upload_images.html"
 
     def post(self, request, *args, **kwargs):
         form_class = self.get_form_class()
@@ -162,7 +171,7 @@ class ImageManagerView(FormView):
             ImageDeleteView.as_view()(request, pk=request.POST["image_pk"])
         elif "move_up" in request.POST:
             # Changes image display position to higher.
-            # TODO save in session, then save?
+            # TODO use json for manage position
             images = self.get_sorted_images(request.POST["product_pk"])
             image = images.get(pk=request.POST["image_pk"])
             image.place -= 1
@@ -423,3 +432,118 @@ class SearchResultView(TemplateView):
         sorted_dict = {k: v for k, v in sorted_tuples}
 
         return sorted_dict.keys()
+
+
+class CategorieListView(ListView):
+    model = Categorie
+    template_name = "categorie_list.html"
+    success_url = reverse_lazy("categorie_list")
+
+    def get(self, request, *args, **kwargs):
+        self.request = request
+        return super().get(self, request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if "categorie_create" in self.request.POST:
+            self.request.method = "GET"
+            context["categorie_create_form"] = CategorieCreateView(
+                request=self.request
+            ).get_form()
+        elif "categorie_update" in self.request.POST:
+            self.request.method = "GET"
+            context["categorie_update_form"] = CategorieUpdateView(
+                request=self.request
+            ).get_form()
+            context["form_pk"] = self.request.POST["categorie_pk"]
+            # Set placeholder text for update form
+            context["categorie_update_form"] = (
+                context["categorie_update_form"]
+                .fields["name"]
+                .widget.render(
+                    "name",
+                    context["object_list"]
+                    .get(pk=self.request.POST["categorie_pk"])
+                    .name,
+                )
+            )
+        return context
+
+    def post(self, request, *args, **kwargs):
+        if "submit_categorie_create" in self.request.POST:
+            CategorieCreateView.as_view()(request)
+        elif "categorie_delete" in self.request.POST:
+            CategorieDeleteView.as_view()(request, pk=self.request.POST["categorie_pk"])
+        elif "submit_categorie_update" in self.request.POST:
+            CategorieUpdateView.as_view()(request, pk=self.request.POST["categorie_pk"])
+        return render(
+            request,
+            "categorie_list.html",
+            self.get(request, *args, **kwargs).context_data,
+        )
+
+
+class CategorieCreateView(CreateView):
+    model = Categorie
+    template_name = "categorie_create.html"
+    fields = ("name",)
+
+
+class CategorieDeleteView(DeleteView):
+    model = Categorie
+    success_url = reverse_lazy("categorie_list")
+
+
+class CategorieUpdateView(UpdateView):
+    model = Categorie
+    template_name = "categorie_update.html"
+    fields = ("name",)
+
+    def post(self, request, *args, **kwargs):
+        self.request = request
+        return super().post(request, *args, **kwargs)
+
+
+class CategorieDetailsView(DetailView):
+    model = Categorie
+    template_name = "categorie_details.html"
+
+
+class CategorieCheckboxView(ListView):
+    model = Product
+    template_name = "categorie_checkbox.html"
+
+    def get(self, request, *args, **kwargs):
+        self.categorie = Categorie.objects.get(pk=kwargs["pk"])
+        return super().get(self, request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        addable_products = list()
+        already_added = list()
+        for product in self.object_list:
+            if product not in self.categorie.products.all():
+                addable_products.append((product.pk, product))
+            else:
+                already_added.append((product.pk, product))
+        context["categorie"] = self.categorie
+        context["form_addable"] = CategorieCheckboxForm(choices=addable_products)
+        context["form_already_added"] = CategorieCheckboxForm(choices=already_added)
+        return context
+
+    def post(self, request, *args, **kwargs):
+        categorie = Categorie.objects.get(pk=request.POST["categorie_pk"])
+        choices = request.POST.getlist("choices")
+        products_queryset = Product.objects.filter(pk__in=choices)
+        if "delete_button" in request.POST:
+            for product in products_queryset:
+                categorie.products.remove(product)
+        elif "add_button" in request.POST:
+            for product in products_queryset:
+                categorie.products.add(product)
+
+        return render(
+            request,
+            "categorie_checkbox.html",
+            self.get(request, *args, **kwargs).context_data,
+        )
