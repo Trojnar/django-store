@@ -17,6 +17,7 @@ from .views import (
     CategorieDetailsView,
     CategorieManageProductsView,
     ProductManageCategoriesView,
+    CartView,
 )
 
 urlpatterns = [
@@ -72,5 +73,10 @@ urlpatterns = [
         "<uuid:pk>/checkbox",
         ProductManageCategoriesView.as_view(),
         name="product_categorie_checkbox",
+    ),
+    path(
+        "cart/<int:pk>",
+        CartView.as_view(),
+        name="cart_details",
     ),
 ]

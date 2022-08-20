@@ -4,5 +4,7 @@
 
 {% block content %}
     <h1>Homepage</h1>
-
+    {% for cart in carts %}
+        {{cart}}
+    {% endfor %}
 {% endblock content %}

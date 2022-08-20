@@ -654,5 +654,10 @@ class CartView(DetailView):
 
     def get(self, request, *args, **kwargs):
         self.object = self.get_object()
-        context = self.get_context_data(object=self.object)
+        self.cart = self.object.in_cart.all()
+        context = self.get_context_data(object=self.object, cart=self.cart)
         return self.render_to_response(context)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**context)
+        return context
