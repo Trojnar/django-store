@@ -1,20 +1,22 @@
 {% extends '_base.html' %}
 
-{% block title %} {{partner_object.name}} {% endblock title %}
+{% block title %} {{product.name}} {% endblock title %}
 
 {% block content %}
 
-<h1>{{partner_object.name}}</h1>
+<h1>{{product.name}}</h1>
 <form enctype="multipart/form-data" method="post">
-    Assign:
+    Addable:
     {% csrf_token %}
     {{form_addable}}
+    <input type="hidden" name="product_pk" value={{ product.pk }}>
     <br> <input type="submit" name="add_button" value="Add">
 </form>
 <form enctype="multipart/form-data" method="post">
-    Assigned:
+    Already added:
     {% csrf_token %}
     {{form_already_added}}
+    <input type="hidden" name="product_pk" value={{ product.pk }}>
     <br> <input type="submit" name="delete_button" value="delete">
 </form>
 

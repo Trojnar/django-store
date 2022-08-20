@@ -15,7 +15,8 @@ from .views import (
     CategorieCreateView,
     CategorieUpdateView,
     CategorieDetailsView,
-    CategorieCheckboxView,
+    CategorieManageProductsView,
+    ProductManageCategoriesView,
 )
 
 urlpatterns = [
@@ -64,7 +65,12 @@ urlpatterns = [
     ),
     path(
         "categorie/<int:pk>/checkbox",
-        CategorieCheckboxView.as_view(),
+        CategorieManageProductsView.as_view(),
         name="categorie_checkbox",
+    ),
+    path(
+        "<uuid:pk>/checkbox",
+        ProductManageCategoriesView.as_view(),
+        name="product_categorie_checkbox",
     ),
 ]
