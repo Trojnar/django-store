@@ -23,14 +23,15 @@ from django.contrib.auth.mixins import (
 from django import forms
 from django.forms import inlineformset_factory
 
-from .models import Product, Image, Categorie
+from .models import Cart, Product, Image, Categorie, CartItem, Transaction
 from .forms import (
     ImagesManagerForm,
     ProductForm,
     ProductFormWithImage,
     ImageForm,
     ImagesManagerUploadImageForm,
-    CategorieCheckboxForm,
+    CheckboxForm,
+    CreateProductForm,
 )
 from reviews.forms import ReviewForm
 from reviews.models import Review
@@ -76,6 +77,7 @@ class ProductCreateView(PermissionRequiredMixin, CreateView):
     template_name = "product_create.html"
     permission_required = "products.add_product"
     form_class = ProductFormWithImage
+    # TODO categories_form = ProductAssignCategoriesView
 
     def post(self, request, *args, **kwargs):
         # Save images if provided.
@@ -89,11 +91,31 @@ class ProductCreateView(PermissionRequiredMixin, CreateView):
             if image_form.is_valid():
                 for index, image in enumerate(files.getlist("image")):
                     Image.objects.create(product=self.object, image=image, place=index)
-
             elif image_form.is_bound:
                 form.add_error(None, image_form.errors["image"])
                 return super().form_invalid(form)
-            return super().form_valid(form)
+            return self.form_valid(form)
+        return super().form_invalid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Set object list for CheckboxView get_context_data method's purpose.
+        self.object_list = Categorie.objects.all()
+        # Get checbox form from Product's categories manager.
+        checkbox_view_context = ProductAssignCategoriesView(
+            object_list=self.object_list
+        ).get_context_data(**kwargs)
+        context.update(checkbox_view_context)
+        return context
+
+    def form_valid(self, form):
+        """
+        If the form is valid, save the product, and assign it to choosen categories.
+        """
+        self.object = form.save()
+        print(self.request)
+        ProductAssignCategoriesView.as_view()(self.request, pk=self.object.pk)
+        return super().form_valid(form)
 
 
 class ProductUpdateView(UpdateView):
@@ -509,41 +531,128 @@ class CategorieDetailsView(DetailView):
     template_name = "categorie_details.html"
 
 
-class CategorieCheckboxView(ListView):
-    model = Product
-    template_name = "categorie_checkbox.html"
+class CheckboxView(ListView):
+    """View meant only for inheritance. Allows to make checkbox view to manage
+    many to many relationship."""
+
+    # Partner model is model that you assign to.
+    partner_model = None
+    relation_name = None
+    form = CheckboxForm
 
     def get(self, request, *args, **kwargs):
-        self.categorie = Categorie.objects.get(pk=kwargs["pk"])
+        self.partner = self.get_partner_model().objects.get(pk=kwargs["pk"])
+        self._set_relation_queryset()
         return super().get(self, request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        addable_products = list()
+        addable_objects = list()
         already_added = list()
-        for product in self.object_list:
-            if product not in self.categorie.products.all():
-                addable_products.append((product.pk, product))
+        for object in self.object_list:
+            if object not in self.relation_queryset:
+                addable_objects.append((object.pk, object.name))
             else:
-                already_added.append((product.pk, product))
-        context["categorie"] = self.categorie
-        context["form_addable"] = CategorieCheckboxForm(choices=addable_products)
-        context["form_already_added"] = CategorieCheckboxForm(choices=already_added)
+                already_added.append((object.pk, object.name))
+        context["partner_object"] = self.partner
+        context["form_addable"] = self.form(choices=addable_objects)
+        context["form_already_added"] = self.form(choices=already_added)
         return context
 
+    def _set_relation_queryset(self):
+        """Set relations queryset that contains every record that is connected to
+        partner_model."""
+        if self.relation_name is None:
+            raise ValueError("You have to specify relation name.")
+
+        self.relation_queryset = eval("self.partner." + self.relation_name + ".all()")
+
+    def get_partner_model(self):
+        """Return pratner model"""
+        if self.partner_model is None:
+            raise ValueError("You have to specify partner model.")
+        return self.partner_model
+
     def post(self, request, *args, **kwargs):
-        categorie = Categorie.objects.get(pk=request.POST["categorie_pk"])
+        # You have to provide 'add_button', 'delete_button' in post request in
+        # order to get post to work.
+        self.partner = self.get_partner_model().objects.get(pk=kwargs["pk"])
         choices = request.POST.getlist("choices")
-        products_queryset = Product.objects.filter(pk__in=choices)
+        queryset = self.model.objects.filter(pk__in=choices)
+
         if "delete_button" in request.POST:
-            for product in products_queryset:
-                categorie.products.remove(product)
+            for record in queryset:
+                self.manage_record(record=record, order="remove")
         elif "add_button" in request.POST:
-            for product in products_queryset:
-                categorie.products.add(product)
+            for record in queryset:
+                self.manage_record(record=record, order="add")
 
         return render(
             request,
-            "categorie_checkbox.html",
+            self.template_name,
             self.get(request, *args, **kwargs).context_data,
         )
+
+    def manage_record(self, record=None, order=None):
+        """Dynamically exec allowed operations for many to many relationship."""
+        allowed = ("add", "remove")
+        if order is None:
+            raise ValueError("Order for _manage_record can't be None value.")
+
+        if record is None:
+            raise ValueError("Record to manage can't be None value")
+
+        if record.__class__ is not self.model:
+            raise ValueError("Record have to be " + str(self.model) + " instance.")
+
+        if order in allowed:
+            exec("self.partner." + self.relation_name + "." + order + "(record)")
+        else:
+            raise Exception("Order " + order + " not allowed.")
+
+
+class CategorieManageProductsView(CheckboxView):
+    model = Product
+    partner_model = Categorie
+    relation_name = "products"
+    template_name = "categorie_checkbox.html"
+
+
+class ProductManageCategoriesView(CheckboxView):
+    """Class that provides class management feture."""
+
+    model = Categorie
+    partner_model = Product
+    relation_name = "categories"
+    template_name = "categorie_checkbox.html"
+
+
+class ProductAssignCategoriesView(ProductManageCategoriesView):
+    """Class that allows to assign categories in ProductCreateView"""
+
+    def get_context_data(self, **kwargs):
+        context = dict(kwargs)
+        addable_objects = list()
+        for object in self.object_list:
+            addable_objects.append((object.pk, object))
+        # TODO change form to model multichocice?
+        context["form_addable"] = self.form(choices=addable_objects)
+        return context
+
+    def post(self, request, *args, **kwargs):
+        self.partner = self.get_partner_model().objects.get(pk=kwargs["pk"])
+        choices = request.POST.getlist("choices")
+        queryset = self.model.objects.filter(pk__in=choices)
+        if "add_product" in request.POST:
+            for record in queryset:
+                self.manage_record(record=record, order="add")
+
+
+class CartView(DetailView):
+    template_name = "cart_details.html"
+    model = Cart
+
+    def get(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        context = self.get_context_data(object=self.object)
+        return self.render_to_response(context)

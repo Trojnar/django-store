@@ -7,9 +7,11 @@
 <form enctype="multipart/form-data" method="post">
     {% csrf_token %}
     {{ form.as_p }}
+    Categories:
+    {{form_addable}}
+    <br>
     <input name="image" type="file" multiple>
-    <input type="submit" name='upload_files' value="Save">
+    <br><br><input type="submit" name='add_product' value="Add Product">
 </form>
-
 
 {% endblock content %}

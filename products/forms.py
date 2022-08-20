@@ -80,7 +80,7 @@ class ImagesManagerForm(forms.Form):
         super().__init__(*args, **kwargs)
 
 
-class CategorieCheckboxForm(forms.Form):
+class CheckboxForm(forms.Form):
     choices = forms.MultipleChoiceField(
         widget=forms.CheckboxSelectMultiple,
         choices=[],
@@ -90,3 +90,9 @@ class CategorieCheckboxForm(forms.Form):
     def __init__(self, choices=[], *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["choices"].choices = choices
+        # TODO https://stackoverflow.com/questions/7192540/validation-on-a-dynamically-s
+        # et-multiplechoicefield-where-the-field-is-initiall
+
+
+class CreateProductForm(CheckboxForm, ProductFormWithImage):
+    pass
