@@ -1,7 +1,4 @@
 import uuid
-
-
-import uuid
 from django.http import HttpResponseRedirect
 from django.urls import reverse, reverse_lazy
 from django.shortcuts import render
@@ -31,7 +28,7 @@ from .forms import (
     ImageForm,
     ImagesManagerUploadImageForm,
     CheckboxForm,
-    CreateProductForm,
+    CartItemForm,
 )
 from reviews.forms import ReviewForm
 from reviews.models import Review
@@ -44,6 +41,14 @@ from itertools import chain
 class ProductListView(ListView):
     model = Product
     template_name = "product_list.html"
+
+    def post(self, request, *args, **kwargs):
+        if "cart_add_button" in request.POST:
+            cart = request.user.carts.get(transaction=None)
+            CartView.as_view()(
+                request, pk=cart.pk, product_pk=request.POST["product_pk"]
+            )
+        return HttpResponseRedirect(reverse("product_list"))
 
 
 # TODO make it look like CategorieListView or just make custom form
@@ -60,9 +65,17 @@ class ProductDetailsView(DetailView):
 
     def post(self, request, *args, **kwargs):
         """Create review using CreateReviewView instance"""
-        view = CreateReviewView()
-        view.request = self.request
-        return view.post(request, *args, **kwargs)
+
+        if "cart_add_button" in request.POST:
+            cart = request.user.carts.get(transaction=None)
+            CartView.as_view()(request, pk=cart.pk, product_pk=kwargs["pk"])
+        if "review_add_button" in request.POST:
+            view = CreateReviewView()
+            view.request = self.request
+            return view.post(request, *args, **kwargs)
+        return HttpResponseRedirect(
+            reverse("product_details", kwargs={"pk": kwargs["pk"]})
+        )
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -648,16 +661,60 @@ class ProductAssignCategoriesView(ProductManageCategoriesView):
                 self.manage_record(record=record, order="add")
 
 
-class CartView(DetailView):
+class CartView(UpdateView):
+    """
+    Cart view for get and post form for Cart model. Template context cart data is
+    fetched from db through context processor 'cart', so only forms are added to
+    context.
+    """
+
     template_name = "cart_details.html"
+    form_class = CartItemForm
     model = Cart
 
     def get(self, request, *args, **kwargs):
         self.object = self.get_object()
-        self.cart = self.object.in_cart.all()
-        context = self.get_context_data(object=self.object, cart=self.cart)
-        return self.render_to_response(context)
+        forms = list()
+        for cart_item in self.object.cart_items.all():
+            # set initial for each cart item form
+            self.initial = {"count": cart_item.count}
+            form = self.get_form()
+            forms.append(form)
+        kwargs["forms"] = forms
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**context)
-        return context
+        return self.render_to_response(self.get_context_data(**kwargs))
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        cart_pk = kwargs.get("pk")
+
+        if "delete_button" in request.POST:
+            # delete cart item
+            cart_item = self.object.cart_items.get(pk=request.POST["cart_item_pk"])
+            cart_item.delete()
+        elif "cart_add_button" in request.POST:
+            # button placed in other templates
+            product = Product.objects.get(pk=kwargs["product_pk"])
+            if product.pk in self.object.cart_items.values_list("product", flat=True):
+                cart_item = CartItem.objects.get(product=product)
+                cart_item.count += 1
+                cart_item.save()
+            else:
+                cart_item = CartItem.objects.create(product=product, cart=self.object)
+        elif "save_button" in request.POST or "buy_button" in request.POST:
+            # set new item count if changed
+            counts = request.POST.getlist("count")
+            cart_item_pks = request.POST.getlist("cart_item_pk")
+            queryset = self.object.cart_items.filter(pk__in=cart_item_pks)
+            for pk, count in zip(cart_item_pks, counts):
+                cart_item = queryset.get(pk=pk)
+                if cart_item.count != count:
+                    cart_item.count = count
+                    cart_item.save()
+            if "buy_button" in request.POST:
+                # redirect to transaction view
+                return HttpResponseRedirect(
+                    reverse("transaction_create", kwargs={"pk": cart_pk})
+                )
+
+        return HttpResponseRedirect(reverse("cart_details", kwargs={"pk": cart_pk}))

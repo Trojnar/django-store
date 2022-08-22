@@ -1,5 +1,5 @@
 from django import forms
-from products.models import Product, Image
+from products.models import CartItem, Product, Image
 
 
 class ProductForm(forms.ModelForm):
@@ -94,5 +94,7 @@ class CheckboxForm(forms.Form):
         # et-multiplechoicefield-where-the-field-is-initiall
 
 
-class CreateProductForm(CheckboxForm, ProductFormWithImage):
-    pass
+class CartItemForm(forms.ModelForm):
+    class Meta:
+        model = CartItem
+        fields = ("count",)

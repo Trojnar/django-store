@@ -1,14 +1,22 @@
-from asyncio.windows_events import NULL
-from django.contrib.auth import get_user_model
+from django.db.models import Prefetch
+from .models import CartItem
 
 
 def cart(request):
+    # TODO change related name 'products', because it's misleading
+    if not request.user.is_authenticated:
+        return {}
+
+    cart = (
+        request.user.carts.all()
+        .prefetch_related(
+            Prefetch("cart_items", CartItem.objects.select_related("product"))
+        )
+        .get(transaction=None)
+    )
+
     return {
-        "carts": None  # request.user.carts.prefetch_related("transaction")
-        # .filter(
-        #     transaction=None
-        # )
+        "cart_pk": cart.pk,
+        "cart_cart_items": cart.cart_items.all(),
+        "cart_cart_items_len": len(cart.cart_items.all()),
     }
-    # queryset = Product.objects.prefetch_related(
-    #     Prefetch("reviews", Review.objects.select_related("author"))
-    # )

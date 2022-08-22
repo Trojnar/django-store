@@ -1,4 +1,4 @@
-from django.views.generic.edit import CreateView
+from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.views.generic import TemplateView
 from .models import CustomUser
 from .forms import CustomUserCreationForm
@@ -15,3 +15,19 @@ class SignUpView(CreateView):
 
 class AccountSettingsView(LoginRequiredMixin, TemplateView):
     template_name = "account/settings.html"
+
+
+class AddressCreate(CreateView):
+    pass
+
+
+class AddressUpdate(UpdateView):
+    pass
+
+
+class AddressDelete(DeleteView):
+    pass
+
+
+# class AddressManage(DetailsView):
+#     pass

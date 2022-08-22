@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Product, Image, Categorie
+from .models import Product, Image, Categorie, CartItem, Cart
 from reviews.models import Review
 
 
@@ -13,6 +13,18 @@ class ImageInline(admin.TabularInline):
 
 class CategorieInline(admin.TabularInline):
     model = Categorie.products.through
+
+
+class CartItemInline(admin.TabularInline):
+    model = CartItem
+
+
+class CartAdmin(admin.ModelAdmin):
+    inlines = [
+        CartItemInline,
+    ]
+    list_display = ("user", "transaction")
+    fields = ("user",)
 
 
 class CategorieAdmin(admin.ModelAdmin):
@@ -44,4 +56,8 @@ admin.site.register(
 admin.site.register(
     Categorie,
     CategorieAdmin,
+)
+admin.site.register(
+    Cart,
+    CartAdmin,
 )

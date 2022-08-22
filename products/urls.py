@@ -79,4 +79,9 @@ urlpatterns = [
         CartView.as_view(),
         name="cart_details",
     ),
+    path(
+        "cart/<int:pk>",
+        CartView.as_view(),
+        name="cart_details",
+    ),
 ]
