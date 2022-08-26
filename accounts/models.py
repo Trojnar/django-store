@@ -20,4 +20,8 @@ class Address(models.Model):
         get_user_model(),
         on_delete=models.SET_NULL,
         null=True,
+        related_name="addresses",
     )
+
+    def get_absolute_url(self):
+        return reverse("address_manage")

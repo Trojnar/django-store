@@ -1,0 +1,36 @@
+{% extends '_base.html' %}
+
+{% block title %} Transaction {% endblock title %}
+
+{% block content %}
+
+<form method="post">
+    {% csrf_token %}
+    {{ name_form }}
+    {% if choose_address_form %}
+    <fieldset>
+    <legend><br>Choose existing address:</legend>
+    {{ choose_address_form }}
+    {% comment %} {% for field in choose_address_form.fields %}
+      {% for choice in field.choices %}
+        {% if forloop.last %}12   {% endif %}
+        {{ choice }}
+      {% endfor %}
+    {% endfor %} {% endcomment %}
+    </fieldset>
+    {% comment %} {{ choose_address_form }} {% endcomment %}
+    {% endif %}
+    {{ add_new_address_form.as_p }}
+    Choose shipping method:
+    <fieldset>
+    {{ shipping_methods_form }}
+    </fieldset>
+    Choose payment method:
+    <fieldset>
+    {{ payment_methods_form }}
+    </fieldset>
+    <input type="submit" name="proceed_to_payment_button" value="Proceed to payment">
+</form>
+
+
+{% endblock content %}

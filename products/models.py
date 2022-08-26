@@ -42,17 +42,22 @@ class Image(models.Model):
 class Transaction(models.Model):
     date = models.DateField()
     # Possible status: pending for payment, pending for shipping, send,
-    status = models.CharField(max_length=10)
+    status = models.CharField(max_length=64)
     tracking_number = models.CharField(max_length=128, blank=True)
     address = models.ForeignKey(
         Address,
         on_delete=models.PROTECT,
         related_name="transactions",
     )
-    # For not logged in users
+    shipping_method = models.CharField(max_length=128, blank=True)
+    payment_method = models.CharField(max_length=128, blank=True)
+
+    # For not logged in users:
     email = models.EmailField(
         blank=True,
     )
+    name = models.CharField(max_length=24, null=True)
+    surname = models.CharField(max_length=24, null=True)
 
 
 class Cart(models.Model):

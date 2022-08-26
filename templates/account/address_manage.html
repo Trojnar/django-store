@@ -1,0 +1,65 @@
+{% extends "_base.html" %}
+
+{% load i18n %}
+
+{% block head_title %}{% trans "Addresses" %}{% endblock %}
+
+{% block content %}
+    <h1>{% trans "Addresses" %}</h1>
+{% if user.addresses.all %}
+<p>{% trans 'The following addresses are associated with your account:' %}</p>
+
+<form action="{% url 'address_manage' %}" class="email_list" method="post">
+{% csrf_token %}
+<fieldset class="blockLabels">
+
+  {% for address in user.addresses.all %}
+<div class="ctrlHolder">
+
+      <input id="email_radio_{{forloop.counter}}" type="radio" name="address" {% if user.addresses.count == 1 %}checked="checked"{%endif %} value="{{address.pk}}"/>
+      {{ address.address }}
+      {{ address.city }}
+      {{ address.postal_code }}
+
+</label>
+</div>
+  {% endfor %}
+
+<div class="buttonHolder">
+      <button class="primaryAction" type="submit" name="remove_button" > Remove </button>
+</div>
+
+</fieldset>
+</form>
+
+{% else %}
+<p><strong>{% trans 'Warning:'%}</strong> {% trans "You currently do not have any address set up." %}</p>
+
+{% endif %}
+
+    <h2>Address</h2>
+
+    <form method="post" action="{% url 'address_manage' %}">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button name="add_button" type="submit">  Add Address </button>
+    </form>
+
+{% endblock %}
+
+
+{% block extra_body %}
+<script type="text/javascript">
+(function() {
+  var message = "{% trans 'Do you really want to remove the selected address?' %}";
+  var actions = document.getElementsByName('remove_button');
+  if (actions.length) {
+    actions[0].addEventListener("click", function(e) {
+      if (! confirm(message)) {
+        e.preventDefault();
+      }
+    });
+  }
+})();
+</script>
+{% endblock %}

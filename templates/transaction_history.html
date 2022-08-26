@@ -1,0 +1,66 @@
+{% extends '_base.html' %}
+
+{% block title %} List Of Transactions {% endblock title %}
+
+{% block content %}
+<html>
+<head>
+<style>
+  table {
+    font-family: arial, sans-serif;
+    border-collapse: collapse;
+    width: 100%;
+  }
+
+  td, th {
+    border: 1px solid #dddddd;
+    text-align: left;
+    padding: 8px;
+  }
+
+  tr:nth-child(even) {
+    background-color: #dddddd;
+  }
+</style>
+</head>
+<body>
+    <ul>
+      <table>
+        <tr>
+          <th>Date</th>
+          <th>Products</th>
+          <th>Tracking</th>
+          <th>Address</th>
+          <th>Shipping Method</th>
+          <th>Price</th>
+          <th>Payment Method</th>
+          <th>Status</th>
+        </tr>
+    {% for cart in object_list reversed %}
+      <form method="post">
+        {% csrf_token %}   
+          <tr>
+            <td>{{ cart.transaction.date }}</td>
+            <td>
+              {% for cart_item in cart.cart_items.all %}
+                {{ cart_item.product.name }} x{{cart_item.count}}
+              {% endfor %}
+            </td>
+            <td>{{ cart.transaction.tracking_number }}</td>
+            <td>{{ cart.transaction.address.address }}
+              {{ cart.transaction.address.city }}
+              {{ cart.transaction.address.postal_code }}</td>
+            <td>{{ cart.transaction.shipping_method }}</td>
+            <td> </td>
+            <td>{{ cart.transaction.payment_method }}</td>
+            <td>{{ cart.transaction.status }}</td>
+          </tr> 
+      </form>
+    {% empty %}
+        <li> No transactions yet. </li>
+    {% endfor %}
+    </table>
+    </ul>
+  </body>
+  </html>
+{% endblock content %}

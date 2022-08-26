@@ -18,6 +18,8 @@ from .views import (
     CategorieManageProductsView,
     ProductManageCategoriesView,
     CartView,
+    TransactionView,
+    TransactionsUserListView,
 )
 
 urlpatterns = [
@@ -83,5 +85,15 @@ urlpatterns = [
         "cart/<int:pk>",
         CartView.as_view(),
         name="cart_details",
+    ),
+    path(
+        "transaction/<int:pk>",
+        TransactionView.as_view(),
+        name="transaction",
+    ),
+    path(
+        "transaction",
+        TransactionsUserListView.as_view(),
+        name="transaction_history",
     ),
 ]
