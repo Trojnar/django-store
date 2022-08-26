@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth import get_user_model
 from django.contrib.auth.admin import UserAdmin
+from .models import Address
 
 
 from .forms import CustomUserCreationForm, CustomUserChangeForm
@@ -15,4 +16,15 @@ class CustomUserAdmin(UserAdmin):
     list_display = ["email", "username", "id"]
 
 
+class AddressAdmin(admin.ModelAdmin):
+    list_display = ("user", "city")
+    fields = (
+        "address",
+        "city",
+        "postal_code",
+        "user",
+    )
+
+
 admin.site.register(CustomUser, CustomUserAdmin)
+admin.site.register(Address, AddressAdmin)

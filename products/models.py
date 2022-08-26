@@ -3,6 +3,8 @@ from django.urls import reverse
 from django.contrib.auth import get_user_model
 import uuid
 
+from accounts.models import Address
+
 
 class Product(models.Model):
     id = models.UUIDField(
@@ -37,34 +39,25 @@ class Image(models.Model):
         super().delete()
 
 
-class Address(models.Model):
-    # TODO move to accounts app
-    address = models.CharField(max_length=128)
-    city = models.CharField(max_length=50)
-    postal_code = models.CharField(max_length=10)
-
-    # For logged in user
-    user = models.ForeignKey(
-        get_user_model(),
-        on_delete=models.SET_NULL,
-        null=True,
-    )
-
-
 class Transaction(models.Model):
     date = models.DateField()
     # Possible status: pending for payment, pending for shipping, send,
-    status = models.CharField(max_length=10)
+    status = models.CharField(max_length=64)
     tracking_number = models.CharField(max_length=128, blank=True)
     address = models.ForeignKey(
         Address,
         on_delete=models.PROTECT,
         related_name="transactions",
     )
-    # For not logged in users
+    shipping_method = models.CharField(max_length=128, blank=True)
+    payment_method = models.CharField(max_length=128, blank=True)
+
+    # For not logged in users:
     email = models.EmailField(
         blank=True,
     )
+    name = models.CharField(max_length=24, null=True)
+    surname = models.CharField(max_length=24, null=True)
 
 
 class Cart(models.Model):
@@ -97,7 +90,7 @@ class CartItem(models.Model):
     cart = models.ForeignKey(
         Cart,
         on_delete=models.CASCADE,
-        related_name="products",
+        related_name="cart_items",
     )
 
 

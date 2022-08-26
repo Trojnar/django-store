@@ -7,8 +7,10 @@
     {% if user.is_authenticated %}
     <p><a href={% url 'account_change_password' %}>Change password</a></p>
     <p><a href={% url 'account_reset_password' %}>Reset password</a></p>
-    <p><a href={% url 'account_email' %}>Manage e-mail</a></p>
-    <p><a href={% url 'socialaccount_connections' %}>Manage socials</a></p>
+    <p><a href={% url 'account_email' %}>E-mails</a></p>
+    <p><a href={% url 'socialaccount_connections' %}>Socials</a></p>
+    <p><a href={% url 'address_manage' %}>Addresses</a></p>
+    <p><a href={% url 'transaction_history' %}>Transactions</a></p>
 
     {% else %}
         You are not logged in.

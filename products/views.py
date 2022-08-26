@@ -1,10 +1,8 @@
-import uuid
-
-
-import uuid
+from datetime import datetime
 from django.http import HttpResponseRedirect
 from django.urls import reverse, reverse_lazy
 from django.shortcuts import render
+from django.contrib.auth import get_user_model
 from django.views.generic import (
     ListView,
     DetailView,
@@ -21,8 +19,9 @@ from django.contrib.auth.mixins import (
     LoginRequiredMixin,
 )
 from django import forms
-from django.forms import inlineformset_factory
 
+from accounts.views import AddressCreate
+from accounts.forms import CustomUserNameForm
 from .models import Cart, Product, Image, Categorie, CartItem, Transaction
 from .forms import (
     ImagesManagerForm,
@@ -31,11 +30,12 @@ from .forms import (
     ImageForm,
     ImagesManagerUploadImageForm,
     CheckboxForm,
-    CreateProductForm,
+    CartItemForm,
+    RadioForm,
 )
 from reviews.forms import ReviewForm
 from reviews.models import Review
-from reviews.views import CreateReviewView, UpdateReviewView
+from reviews.views import CreateReviewView
 
 
 from itertools import chain
@@ -44,6 +44,14 @@ from itertools import chain
 class ProductListView(ListView):
     model = Product
     template_name = "product_list.html"
+
+    def post(self, request, *args, **kwargs):
+        if "cart_add_button" in request.POST:
+            cart = request.user.carts.get(transaction=None)
+            CartView.as_view()(
+                request, pk=cart.pk, product_pk=request.POST["product_pk"]
+            )
+        return HttpResponseRedirect(reverse("product_list"))
 
 
 # TODO make it look like CategorieListView or just make custom form
@@ -60,9 +68,17 @@ class ProductDetailsView(DetailView):
 
     def post(self, request, *args, **kwargs):
         """Create review using CreateReviewView instance"""
-        view = CreateReviewView()
-        view.request = self.request
-        return view.post(request, *args, **kwargs)
+
+        if "cart_add_button" in request.POST:
+            cart = request.user.carts.get(transaction=None)
+            CartView.as_view()(request, pk=cart.pk, product_pk=kwargs["pk"])
+        if "review_add_button" in request.POST:
+            view = CreateReviewView()
+            view.request = self.request
+            return view.post(request, *args, **kwargs)
+        return HttpResponseRedirect(
+            reverse("product_details", kwargs={"pk": kwargs["pk"]})
+        )
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -648,11 +664,224 @@ class ProductAssignCategoriesView(ProductManageCategoriesView):
                 self.manage_record(record=record, order="add")
 
 
-class CartView(DetailView):
+class CartView(UpdateView):
+    """
+    Cart view for get and post form for Cart model. Template context cart data is
+    fetched from db through context processor 'cart', so only forms are added to the
+    context.
+    """
+
     template_name = "cart_details.html"
+    form_class = CartItemForm
     model = Cart
 
     def get(self, request, *args, **kwargs):
         self.object = self.get_object()
-        context = self.get_context_data(object=self.object)
-        return self.render_to_response(context)
+        forms = list()
+        for cart_item in self.object.cart_items.all():
+            # set initial for each cart item form
+            self.initial = {"count": cart_item.count}
+            form = self.get_form()
+            forms.append(form)
+        kwargs["forms"] = forms
+
+        return self.render_to_response(self.get_context_data(**kwargs))
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        assert (
+            self.object.transaction is None
+        ), "Cart can't have assigned transaction in order to edit"
+        cart_pk = kwargs.get("pk")
+
+        if "delete_button" in request.POST:
+            # delete cart item
+            cart_item = self.object.cart_items.get(pk=request.POST["cart_item_pk"])
+            cart_item.delete()
+        elif "cart_add_button" in request.POST:
+            # button placed in other templates
+            product = Product.objects.get(pk=kwargs["product_pk"])
+            if product.pk in self.object.cart_items.values_list("product", flat=True):
+                cart_item = self.object.cart_items.get(product=product)
+                cart_item.count += 1
+                cart_item.save()
+            else:
+                cart_item = CartItem.objects.create(product=product, cart=self.object)
+        elif "save_button" in request.POST or "buy_button" in request.POST:
+            # set new item count if changed
+            counts = request.POST.getlist("count")
+            cart_item_pks = request.POST.getlist("cart_item_pk")
+            queryset = self.object.cart_items.filter(pk__in=cart_item_pks)
+            for pk, count in zip(cart_item_pks, counts):
+                cart_item = queryset.get(pk=pk)
+                if cart_item.count != count:
+                    cart_item.count = count
+                    cart_item.save()
+            if "buy_button" in request.POST:
+                # redirect to transaction view
+                return HttpResponseRedirect(
+                    reverse("transaction", kwargs={"pk": cart_pk})
+                )
+
+        return HttpResponseRedirect(reverse("cart_details", kwargs={"pk": cart_pk}))
+
+
+class TransactionView(TemplateView):
+    template_name = "transaction.html"
+    shipping_methods = (
+        "UPS",
+        "DPD",
+    )
+    payment_methods = (
+        "cash on delivery",
+        "payment_2",
+    )
+
+    def get(self, request, add_new_address_form_errors={}, *args, **kwargs):
+        # name, last_name
+        kwargs["name_form"] = CustomUserNameForm(
+            first_name=request.user.first_name,
+            last_name=request.user.last_name,
+            required=True,
+        )
+
+        # addresses
+        addresses = request.user.addresses.all()
+        choices = list()
+        for address in addresses:
+            label = f"{address.address}\n {address.city}\n {address.postal_code}\n"
+            choices.append((address.pk, label))
+        choices.append(("new", "New address:"))
+        kwargs["choose_address_form"] = RadioForm(
+            choices=choices, name="radio_address", required=True
+        )
+        kwargs["add_new_address_form"] = AddressCreate(
+            request=request
+        ).get_form_class()(initial={"user": request.user}, required=False)
+        # form validation errors for address form
+        kwargs["add_new_address_form"].errors.update(add_new_address_form_errors)
+
+        # shipping methods
+        shipping_methods_choices = list()
+        for shipping_method in self.shipping_methods:
+            shipping_methods_choices.append((shipping_method, shipping_method))
+        kwargs["shipping_methods_form"] = RadioForm(
+            choices=shipping_methods_choices, name="radio_shipping", required=True
+        )
+
+        # payment methods
+        payment_methods_choices = list()
+        for payment_method in self.payment_methods:
+            payment_methods_choices.append((payment_method, payment_method))
+        kwargs["payment_methods_form"] = RadioForm(
+            choices=payment_methods_choices, name="radio_payment", required=True
+        )
+
+        return super().get(self, request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        if "proceed_to_payment_button" in request.POST:
+
+            # addresses
+            if "radio_address" in request.POST:
+                if request.POST["radio_address"] == "new":
+                    response = AddressCreate.as_view()(request)
+                    if (
+                        response.status_code == 200
+                        and not response.context_data["form"].is_valid()
+                    ):
+                        # If form validation errors
+                        kwargs["add_new_address_form_errors"] = response.context_data[
+                            "form"
+                        ].errors
+                        request.method = "GET"
+                        return self.get(request, **kwargs)
+                    else:
+                        # If form valid, get created address.
+                        address = request.user.addresses.last()
+                else:
+                    address = request.user.addresses.get(
+                        pk=request.POST["radio_address"]
+                    )
+            else:
+                raise Exception("radio_address value have to be in post request.")
+
+            # frist_name, last_name
+            if "first_name" in request.POST and "last_name" in request.POST:
+                if request.user.is_authenticated:
+                    request.user.first_name = request.POST["first_name"]
+                    request.user.last_name = request.POST["last_name"]
+                    request.user.save()
+                else:
+                    # TODO Guest transaction
+                    pass
+            else:
+                raise Exception(
+                    "first_name and last_name value have to be in post request."
+                )
+
+            # shipping method
+            if "radio_shipping" in request.POST:
+                shipping = request.POST["radio_shipping"]
+            else:
+                raise Exception("Post request has no value 'radio_shipping'")
+
+            # payment method
+            if "radio_payment" in request.POST:
+                payment_method = request.POST["radio_payment"]
+            else:
+                raise Exception("Post request has no value 'radio_payment'")
+
+            # Create transaction
+            if request.user.is_authenticated:
+                # Get shopping cart
+                cart = request.user.carts.get(transaction=None)
+                # Create and add transaction to cart
+                cart.transaction = Transaction.objects.create(
+                    date=datetime.now(),
+                    status="",
+                    tracking_number="",
+                    address=address,
+                    shipping_method=shipping,
+                )
+                cart.save()
+            else:
+                # TODO Guest transaction
+                pass
+
+            # payment method redirection
+            match payment_method:
+                case "cash on delivery":
+                    cart.transaction.payment_method = payment_method
+                    cart.transaction.status = "pending for shipping"
+                    cart.transaction.save()
+                    return HttpResponseRedirect(reverse("home"))
+                case other:
+                    kwargs[
+                        "payment_error"
+                    ] = f"Method {other} is not supported right now."
+
+
+class TransactionsUserListView(ListView):
+    """View of history of transactions"""
+
+    ordering = "transaction__date"
+    queryset = None
+    template_name = "transaction_history.html"
+
+    def get_queryset(self):
+        self.queryset = (
+            self.request.user.carts.exclude(transaction=None)
+            .select_related("transaction__address")
+            .prefetch_related(
+                Prefetch("cart_items", CartItem.objects.select_related("product"))
+            )
+        )
+        print(self.queryset)
+        return super().get_queryset()
+
+
+class TransactionStaffListView(ListView):
+    """View for managing transactions"""
+
+    pass

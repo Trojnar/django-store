@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse, resolve
-from .models import Product
+from .models import Product, Categorie
 from .views import SearchResultView
 from django.contrib.auth.models import Group
 from django.contrib.auth.models import Permission
@@ -157,21 +157,10 @@ class ProductTests(TestCase):
     def test_edit_review_as_staff_user(self):
         pass
 
-
-class ImageManager(TestCase):
-    def setUp(self):
+    def test_add_to_cart_button(self):
         pass
 
-    def test_use_manager_as_unauthorized_user(self):
-        pass
-
-    def test_delete_image(self):
-        pass
-
-    def test_change_images_order(self):
-        pass
-
-    def test_upload_images(self):
+    def test_categories_form_on_crete_product(self):
         pass
 
 
@@ -226,3 +215,233 @@ class SearchResultViewTest(TestCase):
         self.assertContains(
             response, '<input name="phrase" type="text" placeholder="Search...">'
         )
+
+
+# Images app test
+class ImageManager(TestCase):
+    def setUp(self):
+        pass
+
+    def test_use_manager_as_unauthorized_user(self):
+        pass
+
+    def test_delete_image(self):
+        pass
+
+    def test_change_images_order(self):
+        pass
+
+    def test_upload_images(self):
+        pass
+
+    def test_manage_images_as_casual_user(self):
+        pass
+
+
+# Categories app test
+class CategorieDetailsViewTest(TestCase):
+    def setUp(self):
+        category = Categorie.objects.create(
+            name="test categorie",
+        )
+        product1 = Product.objects.create(
+            name="name",
+            producer="test_producer",
+            price=123,
+        )
+        product2 = Product.objects.create(
+            name="name2",
+            producer="test_producer2",
+            price=321,
+        )
+        category.products.add(product1)
+        category.products.add(product2)
+
+    def test_status_code(self):
+        response = self.client.get(reverse("categorie_details", kwargs={"pk": 1}))
+
+    def test_template_used(self):
+        pass
+
+    def test_view_used(self):
+        pass
+
+    def test_buttons_in_context(self):
+        pass
+
+    def test_add_categorie_form(self):
+        pass
+
+    def test_create_categorie(self):
+        pass
+
+    def test_edit_categorie_form(self):
+        pass
+
+    def test_edit_categorie(self):
+        pass
+
+    def test_delete_categorie(self):
+        pass
+
+    def test_no_crud_as_casual_user(self):
+        pass
+
+
+class CategorieDetailsView(TestCase):
+    def setUp(self):
+        pass
+
+    def test_status_code(self):
+        pass
+
+    def test_template_used(self):
+        pass
+
+    def test_view_used(self):
+        pass
+
+    def test_add_to_cart_button(self):
+        pass
+
+
+class CheckboxViewTest(TestCase):
+    def setUp(self):
+        pass
+
+    def test_status_code(self):
+        pass
+
+    def test_template_used(self):
+        pass
+
+    def test_view_used(self):
+        pass
+
+    def test_can_assign_relationship(self):
+        pass
+
+    def test_can_unassign_relationship(self):
+        pass
+
+
+class CategorieManageProductsView(TestCase):
+    def setUp(self):
+        pass
+
+    def test_status_code(self):
+        pass
+
+    def test_template_used(self):
+        pass
+
+    def test_view_used(self):
+        pass
+
+    def test_categorie_name_on_page(self):
+        pass
+
+    def test_products_to_assign(self):
+        pass
+
+    def test_product_already_assigned(self):
+        pass
+
+    def test_assign_product(self):
+        pass
+
+    def test_unassign_product(self):
+        pass
+
+
+# Transaction app tests
+class CartViewTest(TestCase):
+    def setUp(self):
+        pass
+
+    def test_status_code(self):
+        pass
+
+    def test_template_used(self):
+        pass
+
+    def test_view_used(self):
+        pass
+
+    def test_delete_product_from_cart(self):
+        pass
+
+    def test_change_product_count(self):
+        pass
+
+    def test_proceed_to_payment(self):
+        pass
+
+    def test_use_cart_as_unauthorized_user(self):
+        pass
+
+    def test_cart_changed_to_new_one_after_transaction_assigned(self):
+        pass
+
+
+class TransactionViewTest(TestCase):
+    def setUp(self):
+        pass
+        # response = self.client.post(reverse('transaction', kwargs={'pk': 21}), data={'first_name': 'Lucek', 'last_name': 'twoj stary', 'radio_addresses': 'new', 'city': 'sadf', 'postal_code':'123', 'address': 'asdf', 'radio_payment': 'payment_1'})
+        # response = self.client.post(reverse('transaction', kwargs={'pk': 21}), data={'first_name': 'Lucek', 'last_name': 'twoj stary', 'radio_addresses': 'new', 'city': '', 'postal_code':'123', 'address': 'asdf', 'radio_payment': 'payment_1'})
+
+    def test_status_code(self):
+        pass
+
+    def test_template_used(self):
+        pass
+
+    def test_view_used(self):
+        pass
+
+    def test_name_form_in_context(self):
+        pass
+
+    def test_name_form(self):
+        pass
+
+    def test_address_form_in_context(self):
+        pass
+
+    def test_new_address_created(self):
+        pass
+
+    def test_shipping_method_form_in_context(self):
+        pass
+
+    def test_payment_method_form_in_context(self):
+        pass
+
+    def test_every_user_address_show_on_page(self):
+        pass
+
+    def test_user_have_no_addresses_assigned(self):
+        pass
+
+    def test_create_new_address_blank_form(self):
+        pass
+
+    def test_transaction_created(self):
+        pass
+
+
+class TransactionsUserListViewTest(TestCase):
+    def setUp(self):
+        pass
+
+    def test_status_code(self):
+        pass
+
+    def test_template_used(self):
+        pass
+
+    def test_view_used(self):
+        pass
+
+    def test_every_transaction_show_on_page(self):
+        pass

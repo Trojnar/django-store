@@ -33,12 +33,12 @@
         {% else %}
             <a href={% url 'product_edit' pk=product.pk edit='price' %}>edit</a>
         {% endif %}
+      <br><input type='submit' name="cart_add_button" value="Add to cart">
       </form>
       <a href={% url 'product_update' pk=product.pk%}>Edit Product</a>
       <a href={% url 'images_manager' pk=product.pk%}>Manage Images</a>
       <a href={% url 'product_categorie_checkbox' product.pk %}>Manage Categories.</a>
       
-
 
       <br>
 
@@ -47,7 +47,7 @@
       <form action="" method="post">
         {% csrf_token %}
         <input id="review" type="text" name="review" value="{{ new_review }}">
-        <input type="submit" name='add-review' value="OK">
+        <input type="submit" name='review_add_button' value="OK">
       </form> 
     {% else %} 
       Only logged in users can add reviews. <a href={% url 'account_login' %}>Log In</a> 
