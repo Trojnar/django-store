@@ -13,7 +13,9 @@
             <input hidden name="product_pk" value={{ product.pk }}>
             {% if product.count > 0 %}
               <br>In stock. {{product.count}} left.
-              <br><input type='submit' name="cart_add_button" value="Add to cart">
+              {% if user.is_authenticated %}
+                <br><input type='submit' name="cart_add_button" value="Add to cart">
+              {% endif %}
             {% else %}
               <br>Not in stock.
             {% endif %}</li>

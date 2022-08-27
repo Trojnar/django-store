@@ -1,0 +1,60 @@
+{% extends '_base.html' %}
+
+{% block title %} List Of Categories {% endblock title %}
+
+{% block content %}
+    <ul>
+    {% for category in object_list %}
+        <li>
+            {% if category_update_form and category.pk|stringformat:'s' == form_pk|stringformat:'s' %}
+                <form method='post'>
+                    {% csrf_token %}
+                    {{ category_update_form }}
+                    <input type="hidden" name="category_pk" value={{ category.pk }}>
+                    <input type="submit" name="submit_category_update" value="submit">
+                </form>
+                <form method='post'>
+                    {% csrf_token %}
+                    <input type="submit" name="cancel" value="Cancel">
+                </form>
+            {% else%}
+                <a href="{{ category.get_absolute_url }}">{{ category.name }}</a>
+                {% if user.is_authenticated and user.is_staff %}
+                    <form method='post' >
+                        {% csrf_token %}
+                        <input type="hidden" name="category_pk" value={{ category.pk }}>
+                        <input type="submit" name="category_update" value="edit"> 
+                        <input type="submit" name="category_delete" value="delete">
+                    </form>
+                
+                    <form action="{% url 'category_checkbox' category.pk %}" method="get">
+                        <input type="submit" value="add/delete products">
+                    </form>
+                {% endif %}
+            {% endif %}
+            
+        </li>
+    {% empty %}
+        <li> No categories created. </li>
+    {% endfor %}
+    </ul>
+    {% if category_create_form %}
+        <form method=post>
+            {% csrf_token %}
+            {{ category_create_form }}
+            <input type="submit" name="submit_category_create" value="Submit">
+        </form>
+        <form method=post>
+            {% csrf_token %}
+            <input type="submit" name="cancel" value="Cancel">
+        </form>
+    {% else %}
+        {% if user.is_authenticated and user.is_staff %}
+            <form method=post>
+                {% csrf_token %}
+                <input type="submit" name="category_create" value="Add Category">
+            </form>
+        {% endif %}
+    {% endif %}
+
+{% endblock content %}

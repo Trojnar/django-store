@@ -1,5 +1,7 @@
 {% extends '_base.html' %}
 
+{% load poll_extras %}
+
 {% block title %} Details {% endblock title %}
 
 {% block content %}
@@ -26,7 +28,7 @@
             <a href={% url 'product_edit' pk=product.pk edit='producer' %}>edit</a>
         {% endif %}
 
-        <br> {{ product.price }}
+        <br> {{ product.price|decimal_separator }} $
         {% if edit == 'price' %}
             <input type="submit" value="change">
             <input type="button" onclick="location.href='{% url 'product_details' pk=product.pk %}';" value="cancel" />
@@ -41,9 +43,11 @@
         {% endif %}
       
       </form>
+      {% if user.is_authenticated and user.is_staff %}
       <a href={% url 'product_update' pk=product.pk%}>Edit Product</a>
       <a href={% url 'images_manager' pk=product.pk%}>Manage Images</a>
-      <a href={% url 'product_categorie_checkbox' product.pk %}>Manage Categories.</a>
+      <a href={% url 'product_category_checkbox' product.pk %}>Manage Categories.</a>
+      {% endif %}
       
 
       <br>

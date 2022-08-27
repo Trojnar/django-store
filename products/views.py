@@ -1,5 +1,6 @@
 from datetime import datetime
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, HttpResponseForbidden, Http404
+from django.shortcuts import redirect
 from django.urls import reverse, reverse_lazy
 from django.shortcuts import render
 from django.contrib.auth import get_user_model
@@ -18,11 +19,12 @@ from django.contrib.auth.mixins import (
     UserPassesTestMixin,
     LoginRequiredMixin,
 )
+from django.contrib.auth.decorators import login_required
 from django import forms
 
 from accounts.views import AddressCreate
 from accounts.forms import CustomUserNameForm
-from .models import Cart, Product, Image, Categorie, CartItem, Transaction
+from .models import Cart, Product, Image, Category, CartItem, Transaction
 from .forms import (
     ImagesManagerForm,
     ProductForm,
@@ -36,6 +38,7 @@ from .forms import (
 from reviews.forms import ReviewForm
 from reviews.models import Review
 from reviews.views import CreateReviewView
+from accounts.views import StaffPrivilegesRequiredMixin
 
 
 from itertools import chain
@@ -44,17 +47,22 @@ from itertools import chain
 class ProductListView(ListView):
     model = Product
     template_name = "product_list.html"
+    ordering = "name"
 
     def post(self, request, *args, **kwargs):
+        if request.user.is_authenticated:
+            self.cart_add_button(request)
+        return HttpResponseRedirect(reverse("product_list"))
+
+    def cart_add_button(self, request):
         if "cart_add_button" in request.POST:
             cart = request.user.carts.get(transaction=None)
             CartView.as_view()(
                 request, pk=cart.pk, product_pk=request.POST["product_pk"]
             )
-        return HttpResponseRedirect(reverse("product_list"))
 
 
-# TODO make it look like CategorieListView or just make custom form
+# TODO make it look like CategoryListView or just make custom form
 class ProductDetailsView(DetailView):
     model = Product
     template_name = "product_details.html"
@@ -88,10 +96,9 @@ class ProductDetailsView(DetailView):
         return context
 
 
-class ProductCreateView(PermissionRequiredMixin, CreateView):
+class ProductCreateView(StaffPrivilegesRequiredMixin, CreateView):
     model = Product
     template_name = "product_create.html"
-    permission_required = "products.add_product"
     form_class = ProductFormWithImage
     # TODO categories_form = ProductAssignCategoriesView
 
@@ -116,7 +123,7 @@ class ProductCreateView(PermissionRequiredMixin, CreateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         # Set object list for CheckboxView get_context_data method's purpose.
-        self.object_list = Categorie.objects.all()
+        self.object_list = Category.objects.all()
         # Get checbox form from Product's categories manager.
         checkbox_view_context = ProductAssignCategoriesView(
             object_list=self.object_list
@@ -134,14 +141,14 @@ class ProductCreateView(PermissionRequiredMixin, CreateView):
         return super().form_valid(form)
 
 
-class ProductUpdateView(UpdateView):
+class ProductUpdateView(StaffPrivilegesRequiredMixin, UpdateView):
     model = Product
     template_name = "product_create.html"
     from_class = ProductFormWithImage
     fields = ("name", "producer", "price", "image")
 
 
-class ImagesUpload(FormView):
+class ImagesUpload(StaffPrivilegesRequiredMixin, FormView):
     form_class = ImagesManagerUploadImageForm
     template_name = "upload_images.html"
 
@@ -162,12 +169,12 @@ class ImagesUpload(FormView):
         return HttpResponseRedirect(self.success_url)
 
 
-class ImageDeleteView(DeleteView):
+class ImageDeleteView(StaffPrivilegesRequiredMixin, DeleteView):
     model = Image
     success_url = reverse_lazy("product_list")
 
 
-class ImageManagerView(FormView):
+class ImageManagerView(StaffPrivilegesRequiredMixin, FormView):
     template_name = "images_manager.html"
     form_class = ImagesManagerForm
 
@@ -261,7 +268,7 @@ class ImageManagerView(FormView):
 
 
 class EditProductDetailsView(
-    LoginRequiredMixin, UserPassesTestMixin, ProductDetailsView
+    LoginRequiredMixin, StaffPrivilegesRequiredMixin, ProductDetailsView
 ):
     editables = (
         "name",
@@ -333,13 +340,6 @@ class EditProductDetailsView(
                 )
         else:
             return super().post(self, request, *args, **kwargs)
-
-    def test_func(self):
-        authorized = False
-        user = self.request.user
-        if user.is_staff or user.is_superuser:
-            authorized = True
-        return authorized
 
 
 class EditReviewProductDetailsView(LoginRequiredMixin, ProductDetailsView):
@@ -472,10 +472,10 @@ class SearchResultView(TemplateView):
         return sorted_dict.keys()
 
 
-class CategorieListView(ListView):
-    model = Categorie
-    template_name = "categorie_list.html"
-    success_url = reverse_lazy("categorie_list")
+class CategoryListView(ListView):
+    model = Category
+    template_name = "category_list.html"
+    success_url = reverse_lazy("category_list")
 
     def get(self, request, *args, **kwargs):
         self.request = request
@@ -483,58 +483,58 @@ class CategorieListView(ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        if "categorie_create" in self.request.POST:
+        if "category_create" in self.request.POST:
             self.request.method = "GET"
-            context["categorie_create_form"] = CategorieCreateView(
+            context["category_create_form"] = CategoryCreateView(
                 request=self.request
             ).get_form()
-        elif "categorie_update" in self.request.POST:
+        elif "category_update" in self.request.POST:
             self.request.method = "GET"
-            context["categorie_update_form"] = CategorieUpdateView(
+            context["category_update_form"] = CategoryUpdateView(
                 request=self.request
             ).get_form()
-            context["form_pk"] = self.request.POST["categorie_pk"]
+            context["form_pk"] = self.request.POST["category_pk"]
             # Set placeholder text for update form
-            context["categorie_update_form"] = (
-                context["categorie_update_form"]
+            context["category_update_form"] = (
+                context["category_update_form"]
                 .fields["name"]
                 .widget.render(
                     "name",
                     context["object_list"]
-                    .get(pk=self.request.POST["categorie_pk"])
+                    .get(pk=self.request.POST["category_pk"])
                     .name,
                 )
             )
         return context
 
     def post(self, request, *args, **kwargs):
-        if "submit_categorie_create" in self.request.POST:
-            CategorieCreateView.as_view()(request)
-        elif "categorie_delete" in self.request.POST:
-            CategorieDeleteView.as_view()(request, pk=self.request.POST["categorie_pk"])
-        elif "submit_categorie_update" in self.request.POST:
-            CategorieUpdateView.as_view()(request, pk=self.request.POST["categorie_pk"])
+        if "submit_category_create" in self.request.POST:
+            CategoryCreateView.as_view()(request)
+        elif "category_delete" in self.request.POST:
+            CategoryDeleteView.as_view()(request, pk=self.request.POST["category_pk"])
+        elif "submit_category_update" in self.request.POST:
+            CategoryUpdateView.as_view()(request, pk=self.request.POST["category_pk"])
         return render(
             request,
-            "categorie_list.html",
+            "category_list.html",
             self.get(request, *args, **kwargs).context_data,
         )
 
 
-class CategorieCreateView(CreateView):
-    model = Categorie
-    template_name = "categorie_create.html"
+class CategoryCreateView(LoginRequiredMixin, StaffPrivilegesRequiredMixin, CreateView):
+    model = Category
+    template_name = "category_create.html"
     fields = ("name",)
 
 
-class CategorieDeleteView(DeleteView):
-    model = Categorie
-    success_url = reverse_lazy("categorie_list")
+class CategoryDeleteView(LoginRequiredMixin, StaffPrivilegesRequiredMixin, DeleteView):
+    model = Category
+    success_url = reverse_lazy("category_list")
 
 
-class CategorieUpdateView(UpdateView):
-    model = Categorie
-    template_name = "categorie_update.html"
+class CategoryUpdateView(LoginRequiredMixin, StaffPrivilegesRequiredMixin, UpdateView):
+    model = Category
+    template_name = "category_update.html"
     fields = ("name",)
 
     def post(self, request, *args, **kwargs):
@@ -542,9 +542,9 @@ class CategorieUpdateView(UpdateView):
         return super().post(request, *args, **kwargs)
 
 
-class CategorieDetailsView(DetailView):
-    model = Categorie
-    template_name = "categorie_details.html"
+class CategoryDetailsView(DetailView):
+    model = Category
+    template_name = "category_details.html"
 
 
 class CheckboxView(ListView):
@@ -627,20 +627,24 @@ class CheckboxView(ListView):
             raise Exception("Order " + order + " not allowed.")
 
 
-class CategorieManageProductsView(CheckboxView):
+class CategoryManageProductsView(
+    LoginRequiredMixin, StaffPrivilegesRequiredMixin, CheckboxView
+):
     model = Product
-    partner_model = Categorie
+    partner_model = Category
     relation_name = "products"
-    template_name = "categorie_checkbox.html"
+    template_name = "category_checkbox.html"
 
 
-class ProductManageCategoriesView(CheckboxView):
-    """Class that provides class management feture."""
+class ProductManageCategoriesView(
+    LoginRequiredMixin, StaffPrivilegesRequiredMixin, CheckboxView
+):
+    """Class that provides categories management feture."""
 
-    model = Categorie
+    model = Category
     partner_model = Product
     relation_name = "categories"
-    template_name = "categorie_checkbox.html"
+    template_name = "category_checkbox.html"
 
 
 class ProductAssignCategoriesView(ProductManageCategoriesView):
@@ -664,7 +668,30 @@ class ProductAssignCategoriesView(ProductManageCategoriesView):
                 self.manage_record(record=record, order="add")
 
 
-class CartView(UpdateView):
+class ObjectOwnershipRequiredMixin:
+    """Raise page not found exception if object in UpdateView or DeleteView is not
+    request's user property"""
+
+    def __init__(self):
+        self.__is_object_property = False
+
+    def get_object(self, queryset=None):
+        """Raise page not found exception if object is not request's user property"""
+        object = super().get_object(queryset=queryset)
+        self.__is_object_property = self._is_object_users_property(object)
+        if not self.__is_object_property:
+            raise Http404()
+        return object
+
+    def _is_object_users_property(self, object):
+        """Tests if it's user's cart, if not returns forbidden response."""
+        if self.request.user.pk != object.user.pk:
+            return False
+
+        return True
+
+
+class CartView(LoginRequiredMixin, ObjectOwnershipRequiredMixin, UpdateView):
     """
     Cart view for get and post form for Cart model. Template context cart data is
     fetched from db through context processor 'cart', so only forms are added to the
@@ -690,6 +717,7 @@ class CartView(UpdateView):
 
     def post(self, request, *args, **kwargs):
         self.object = self.get_object()
+
         assert (
             self.object.transaction is None
         ), "Cart can't have assigned transaction in order to edit"
@@ -929,7 +957,7 @@ class TransactionsUserListView(ListView):
         return super().get_queryset()
 
 
-class TransactionStaffListView(ListView):
+class TransactionStaffListView(StaffPrivilegesRequiredMixin, ListView):
     """View for managing transactions"""
 
     pass

@@ -98,7 +98,7 @@ class CartItem(models.Model):
     )
 
 
-class Categorie(models.Model):
+class Category(models.Model):
     products = models.ManyToManyField(
         Product,
         related_name="categories",
@@ -109,4 +109,7 @@ class Categorie(models.Model):
         return self.name
 
     def get_absolute_url(self):
-        return reverse("categorie_details", kwargs={"pk": self.pk})
+        return reverse("category_details", kwargs={"pk": self.pk})
+
+    class Meta:
+        verbose_name_plural = "categories"

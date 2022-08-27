@@ -2,6 +2,8 @@
 
 {% block title %} List Of Transactions {% endblock title %}
 
+{% load poll_extras %}
+
 {% block content %}
 <html>
 <head>
@@ -51,7 +53,7 @@
               {{ cart.transaction.address.city }}
               {{ cart.transaction.address.postal_code }}</td>
             <td>{{ cart.transaction.shipping_method }}</td>
-            <td> </td>
+            <td> {{ cart.price | decimal_separator }} $ </td>
             <td>{{ cart.transaction.payment_method }}</td>
             <td>{{ cart.transaction.status }}</td>
           </tr> 
