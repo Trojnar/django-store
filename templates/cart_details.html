@@ -8,14 +8,15 @@
     <ul>
     <form method="post">
         {% csrf_token %}
-        {% for cart_item, form in cart_cart_items|zip:forms %}
-            <li><a href="{{ cart_item.product.get_absolute_url }}">{{cart_item.product.name}} - {{cart_item.product.price}} zł - {{cart_item.product.producer}}</a> {{ form }}</li>
+        {% for cart_item, form in cart_object.cart_items.all|zip:forms %}
+            <li><a href="{{ cart_item.product.get_absolute_url }}">{{cart_item.product.name}} - {{cart_item.product.price|decimal_separator}} $ - {{cart_item.product.producer}}</a> {{ form }}</li>
             <input hidden name="cart_item_pk" value={{cart_item.pk}}>
             <input name="delete_button" type="submit" value="delete">
 
         {% empty %}
             <li> No products avalivible. </li>
         {% endfor %}
+        Price: {{ cart_price_str }} $
         <br><br><input name="save_button" type="submit" value="save">
         <input name="buy_button" type="submit" value="buy">
     </form>

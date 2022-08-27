@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse, resolve
-from .models import Product, Categorie
+from .models import Product, Category
 from .views import SearchResultView
 from django.contrib.auth.models import Group
 from django.contrib.auth.models import Permission
@@ -239,10 +239,10 @@ class ImageManager(TestCase):
 
 
 # Categories app test
-class CategorieDetailsViewTest(TestCase):
+class CategoryDetailsViewTest(TestCase):
     def setUp(self):
-        category = Categorie.objects.create(
-            name="test categorie",
+        category = Category.objects.create(
+            name="test category",
         )
         product1 = Product.objects.create(
             name="name",
@@ -258,7 +258,7 @@ class CategorieDetailsViewTest(TestCase):
         category.products.add(product2)
 
     def test_status_code(self):
-        response = self.client.get(reverse("categorie_details", kwargs={"pk": 1}))
+        response = self.client.get(reverse("category_details", kwargs={"pk": 1}))
 
     def test_template_used(self):
         pass
@@ -269,26 +269,26 @@ class CategorieDetailsViewTest(TestCase):
     def test_buttons_in_context(self):
         pass
 
-    def test_add_categorie_form(self):
+    def test_add_category_form(self):
         pass
 
-    def test_create_categorie(self):
+    def test_create_category(self):
         pass
 
-    def test_edit_categorie_form(self):
+    def test_edit_category_form(self):
         pass
 
-    def test_edit_categorie(self):
+    def test_edit_category(self):
         pass
 
-    def test_delete_categorie(self):
+    def test_delete_category(self):
         pass
 
     def test_no_crud_as_casual_user(self):
         pass
 
 
-class CategorieDetailsView(TestCase):
+class CategoryDetailsView(TestCase):
     def setUp(self):
         pass
 
@@ -325,7 +325,7 @@ class CheckboxViewTest(TestCase):
         pass
 
 
-class CategorieManageProductsView(TestCase):
+class CategoryManageProductsView(TestCase):
     def setUp(self):
         pass
 
@@ -338,7 +338,7 @@ class CategorieManageProductsView(TestCase):
     def test_view_used(self):
         pass
 
-    def test_categorie_name_on_page(self):
+    def test_category_name_on_page(self):
         pass
 
     def test_products_to_assign(self):
