@@ -33,7 +33,13 @@
         {% else %}
             <a href={% url 'product_edit' pk=product.pk edit='price' %}>edit</a>
         {% endif %}
-      <br><input type='submit' name="cart_add_button" value="Add to cart">
+        {% if product.count > 0 %}
+          <br>In stock.
+          <br><input type='submit' name="cart_add_button" value="Add to cart">
+        {% else %}
+          <br>Not in stock.
+        {% endif %}
+      
       </form>
       <a href={% url 'product_update' pk=product.pk%}>Edit Product</a>
       <a href={% url 'images_manager' pk=product.pk%}>Manage Images</a>

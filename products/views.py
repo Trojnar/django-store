@@ -677,6 +677,7 @@ class CartView(UpdateView):
 
     def get(self, request, *args, **kwargs):
         self.object = self.get_object()
+
         forms = list()
         for cart_item in self.object.cart_items.all():
             # set initial for each cart item form
@@ -694,29 +695,31 @@ class CartView(UpdateView):
         ), "Cart can't have assigned transaction in order to edit"
         cart_pk = kwargs.get("pk")
 
+        # TODO message errors
+        errors = list()
+
         if "delete_button" in request.POST:
             # delete cart item
             cart_item = self.object.cart_items.get(pk=request.POST["cart_item_pk"])
-            cart_item.delete()
+            self.cart_item_delete(cart_item)
         elif "cart_add_button" in request.POST:
             # button placed in other templates
             product = Product.objects.get(pk=kwargs["product_pk"])
             if product.pk in self.object.cart_items.values_list("product", flat=True):
                 cart_item = self.object.cart_items.get(product=product)
-                cart_item.count += 1
-                cart_item.save()
+                self.cart_item_update(cart_item, cart_item.count + 1)
             else:
                 cart_item = CartItem.objects.create(product=product, cart=self.object)
+                self.cart_item_update(cart_item, cart_item.count + 1)
         elif "save_button" in request.POST or "buy_button" in request.POST:
             # set new item count if changed
-            counts = request.POST.getlist("count")
+            counts = list(map(int, request.POST.getlist("count")))
             cart_item_pks = request.POST.getlist("cart_item_pk")
             queryset = self.object.cart_items.filter(pk__in=cart_item_pks)
             for pk, count in zip(cart_item_pks, counts):
                 cart_item = queryset.get(pk=pk)
-                if cart_item.count != count:
-                    cart_item.count = count
-                    cart_item.save()
+                self.cart_item_update(cart_item, count)
+
             if "buy_button" in request.POST:
                 # redirect to transaction view
                 return HttpResponseRedirect(
@@ -724,6 +727,51 @@ class CartView(UpdateView):
                 )
 
         return HttpResponseRedirect(reverse("cart_details", kwargs={"pk": cart_pk}))
+
+    def cart_item_delete(self, cart_item):
+        """Delete cart item."""
+        cart_item.product.count += cart_item.count
+        cart_item.product.save()
+        cart_item.delete()
+
+    def cart_item_update(self, cart_item, update_value):
+        """Update cart item by update_value value."""
+        difference = update_value - cart_item.count
+        # TODO message errors
+        errors = []
+        if update_value == 0:
+            self.cart_item_delete(cart_item)
+        elif difference > 0:
+            if cart_item.product.count >= difference:
+                cart_item.count = update_value
+                cart_item.product.count -= difference
+                cart_item.save()
+                cart_item.product.save()
+            else:
+                errors.append(f"Only {cart_item.product.count} left.")
+        elif difference < 0:
+            cart_item.count = update_value
+            cart_item.product.count -= difference
+            cart_item.save()
+            cart_item.product.save()
+        elif difference == 0:
+            pass
+        else:
+            # no change
+            pass
+
+        return errors
+
+    def cart_count_price(self, cart=None):
+        """Count cart price"""
+        if cart is None:
+            cart = self.object
+
+        price = 0
+        for cart_item in cart.cart_items.all():
+            price += cart_item.product.price * cart_item.count
+        cart.price = price
+        cart.save()
 
 
 class TransactionView(TemplateView):

@@ -14,7 +14,9 @@ class Product(models.Model):
     )
     name = models.CharField(max_length=200)
     producer = models.CharField(max_length=200)
-    price = models.DecimalField(max_digits=6, decimal_places=2)
+    description = models.CharField(max_length=3000)
+    price = models.IntegerField()  # price in lowest change of currency
+    count = models.IntegerField()  # products in stock
 
     def __str__(self):
         return self.name
@@ -56,8 +58,8 @@ class Transaction(models.Model):
     email = models.EmailField(
         blank=True,
     )
-    name = models.CharField(max_length=24, null=True)
-    surname = models.CharField(max_length=24, null=True)
+    name = models.CharField(max_length=24, blank=True)
+    surname = models.CharField(max_length=24, blank=True)
 
 
 class Cart(models.Model):
@@ -69,6 +71,8 @@ class Cart(models.Model):
         related_name="carts",
         null=True,
     )
+    price = models.IntegerField(null=True)  # price of whole cart
+
     # If transaction not null, new cart is assigned to user.
     transaction = models.OneToOneField(
         Transaction,
@@ -85,7 +89,7 @@ class CartItem(models.Model):
         related_name="in_cart",
     )
     count = models.IntegerField(
-        default=1,
+        default=0,
     )
     cart = models.ForeignKey(
         Cart,

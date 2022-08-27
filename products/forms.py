@@ -20,6 +20,7 @@ class ProductFormWithImage(forms.ModelForm):
             "name",
             "producer",
             "price",
+            "count",
         ]
 
 

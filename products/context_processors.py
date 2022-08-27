@@ -1,6 +1,7 @@
 from django.db.models import Prefetch
 from django.core.exceptions import MultipleObjectsReturned
 from .models import CartItem, Cart
+from .views import CartView
 
 
 def cart(request):
@@ -28,8 +29,14 @@ def cart(request):
         # Add blank shopping cart to the user is not exists
         cart = request.user.carts.create()
 
+    CartView().cart_count_price(cart=cart)
+
+    # add decimal separator to price
+    cart_price_str = str(cart.price)
+    cart_price_str = cart_price_str[:-2] + "," + cart_price_str[-2:]
+
     return {
-        "cart_pk": cart.pk,
-        "cart_cart_items": cart.cart_items.all(),
+        "cart_price_str": cart_price_str,
+        "cart_object": cart,
         "cart_cart_items_len": len(cart.cart_items.all()),
     }

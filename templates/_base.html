@@ -10,7 +10,7 @@
            Hi {{ user.email }}
            <a href={% url 'account_settings' %}>Settings</a>
            <a href={% url 'account_logout' %}>Log Out</a>
-           <a href={% url 'cart_details' cart_pk %}>Cart({{ cart_cart_items_len }})</a>
+           <a href={% url 'cart_details' cart_object.pk %}>Cart({{ cart_cart_items_len }})</a>
          {% else %}
            <a href={% url 'account_login' %}>Log In</a>
            <a href={% url 'account_signup' %}>Sign Up</a>
