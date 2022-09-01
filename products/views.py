@@ -136,7 +136,6 @@ class ProductCreateView(StaffPrivilegesRequiredMixin, CreateView):
         If the form is valid, save the product, and assign it to choosen categories.
         """
         self.object = form.save()
-        print(self.request)
         ProductAssignCategoriesView.as_view()(self.request, pk=self.object.pk)
         return super().form_valid(form)
 
@@ -149,6 +148,8 @@ class ProductUpdateView(StaffPrivilegesRequiredMixin, UpdateView):
 
 
 class ImagesUpload(StaffPrivilegesRequiredMixin, FormView):
+    """View that provides uploading images feature."""
+
     form_class = ImagesManagerUploadImageForm
     template_name = "upload_images.html"
 
@@ -157,7 +158,7 @@ class ImagesUpload(StaffPrivilegesRequiredMixin, FormView):
         form = self.get_form(form_class)
         images = request.FILES.getlist("image")
         if form.is_valid():
-            product = Product.objects.get(pk=request.POST["product_pk"])
+            product = Product.objects.get(pk=self.initial["product_pk"])
             images_queryset = product.images.all()
             for index, image in enumerate(images):
                 Image.objects.create(
@@ -166,15 +167,23 @@ class ImagesUpload(StaffPrivilegesRequiredMixin, FormView):
                     place=index
                     + len(images_queryset),  # set diplay position at the end of list
                 )
+        else:
+            print(form.errors)
+            # TODO handle error messages| form invalid here
+            pass
         return HttpResponseRedirect(self.success_url)
 
 
 class ImageDeleteView(StaffPrivilegesRequiredMixin, DeleteView):
+    """View that provides deleting images feature."""
+
     model = Image
     success_url = reverse_lazy("product_list")
 
 
 class ImageManagerView(StaffPrivilegesRequiredMixin, FormView):
+    """View that provides managing images feature for product."""
+
     template_name = "images_manager.html"
     form_class = ImagesManagerForm
 
@@ -191,6 +200,7 @@ class ImageManagerView(StaffPrivilegesRequiredMixin, FormView):
         ).get_context_data()["form"]
 
         if images:
+            # Display images
             # super().get_context_data needs initial to make first form
             self.initial = {"image_pk": images[0].pk, "product_pk": kwargs["pk"]}
             context = super().get_context_data(**kwargs)
@@ -216,44 +226,40 @@ class ImageManagerView(StaffPrivilegesRequiredMixin, FormView):
             ImageDeleteView.as_view()(request, pk=request.POST["image_pk"])
         elif "move_up" in request.POST:
             # Changes image display position to higher.
-            # TODO use json for manage position
-            images = self.get_sorted_images(request.POST["product_pk"])
+            images = self.get_sorted_images(kwargs["pk"])
             image = images.get(pk=request.POST["image_pk"])
             image.place -= 1
             image.place = self.adjust_index_to_range(0, images.count() - 1, image.place)
-            if image.place != 0:
+            if image.place >= 0:
                 next_image = images.get(place=image.place)
                 next_image.place += 1
                 next_image.place = self.adjust_index_to_range(
                     0, images.count() - 1, next_image.place
                 )
                 next_image.save()
-            image.save()
+                image.save()
         elif "move_down" in request.POST:
             # Changes image display position to lower.
-            images = self.get_sorted_images(request.POST["product_pk"])
+            images = self.get_sorted_images(kwargs["pk"])
             image = images.get(pk=request.POST["image_pk"])
             image.place += 1
             image.place = self.adjust_index_to_range(0, images.count() - 1, image.place)
-            if image.place != images.count():
+            if image.place < images.count():
                 previous_image = images.get(place=image.place)
                 previous_image.place -= 1
                 previous_image.place = self.adjust_index_to_range(
                     0, images.count() - 1, previous_image.place
                 )
                 previous_image.save()
-            image.save()
+                image.save()
         elif "upload_images" in request.POST:
             # Uploading files using ImagesUploadView.
             ImagesUpload.as_view(
-                success_url=reverse(
-                    "images_manager", kwargs={"pk": request.POST["product_pk"]}
-                ),
-                initial={"product_pk": request.POST["product_pk"]},
+                success_url=reverse("images_manager", kwargs={"pk": kwargs["pk"]}),
+                initial={"product_pk": kwargs["pk"]},
             )(self.request)
-
         return HttpResponseRedirect(
-            reverse("images_manager", kwargs={"pk": request.POST["product_pk"]})
+            reverse("images_manager", kwargs={"pk": kwargs["pk"]})
         )
 
     def get_sorted_images(self, product):
@@ -488,11 +494,13 @@ class CategoryListView(ListView):
             context["category_create_form"] = CategoryCreateView(
                 request=self.request
             ).get_form()
+            self.request.method = "POST"
         elif "category_update" in self.request.POST:
             self.request.method = "GET"
             context["category_update_form"] = CategoryUpdateView(
                 request=self.request
             ).get_form()
+            self.request.method = "POST"
             context["form_pk"] = self.request.POST["category_pk"]
             # Set placeholder text for update form
             context["category_update_form"] = (
@@ -545,6 +553,19 @@ class CategoryUpdateView(LoginRequiredMixin, StaffPrivilegesRequiredMixin, Updat
 class CategoryDetailsView(DetailView):
     model = Category
     template_name = "category_details.html"
+
+    def post(self, request, *args, **kwargs):
+        if "cart_add_button" in request.POST:
+            if request.user.is_authenticated:
+                cart = request.user.carts.get(transaction=None)
+                CartView.as_view()(
+                    request, pk=cart.pk, product_pk=request.POST["product_pk"]
+                )
+        return render(
+            request,
+            self.template_name,
+            self.get(request, *args, **kwargs).context_data,
+        )
 
 
 class CheckboxView(ListView):
@@ -953,7 +974,6 @@ class TransactionsUserListView(ListView):
                 Prefetch("cart_items", CartItem.objects.select_related("product"))
             )
         )
-        print(self.queryset)
         return super().get_queryset()
 
 
