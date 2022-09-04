@@ -3,16 +3,22 @@
 {% block title %} Settings {% endblock title %}
 
 {% block content %}
-    <h1>Account Settings</h1>
-    {% if user.is_authenticated %}
-    <p><a href={% url 'account_change_password' %}>Change password</a></p>
-    <p><a href={% url 'account_reset_password' %}>Reset password</a></p>
-    <p><a href={% url 'account_email' %}>E-mails</a></p>
-    <p><a href={% url 'socialaccount_connections' %}>Socials</a></p>
-    <p><a href={% url 'address_manage' %}>Addresses</a></p>
-    <p><a href={% url 'transaction_history' %}>Transactions</a></p>
 
-    {% else %}
-        You are not logged in.
-    {% endif %}
+    <div class="d-flex justify-content-center">
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title">Settings</h5>
+          <ul class="list-group list-group-flush">
+            <li class="list-group-item"><a href={% url 'account_change_password' %}>Change password</a></li>
+            <li class="list-group-item"><a href={% url 'account_reset_password' %}>Reset password</a></li>
+            <li class="list-group-item"><a href={% url 'account_email' %}>E-mails</a></li>
+            <li class="list-group-item"><a href={% url 'socialaccount_connections' %}>Socials</a></li>
+            <li class="list-group-item"><a href={% url 'address_manage' %}>Addresses</a></li>
+            <li class="list-group-item"><a href={% url 'transaction_history' %}>Transactions</a></li>
+            <li class="list-group-item"><a href={% url 'account_logout' %}>Log Out</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
 {% endblock content %}

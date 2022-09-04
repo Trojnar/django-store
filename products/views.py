@@ -48,6 +48,27 @@ class ProductListView(ListView):
     model = Product
     template_name = "product_list.html"
     ordering = "name"
+    rows_count = 4
+
+    def get_context_data(self, **kwargs):
+        """split product to rows to display them on page"""
+        product_rows = list()
+        row = list()
+        for index, object in enumerate(self.object_list):
+            row.append(object)
+            if ((index + 1) % self.rows_count) == 0:
+                product_rows.append(row)
+                row = list()
+
+        # Add blank items to row to make last row the same length
+        for index in range(
+            self.rows_count - (self.object_list.count() % self.rows_count)
+        ):
+            row.append("blank")
+        product_rows.append(row)
+
+        kwargs["product_rows"] = product_rows
+        return super().get_context_data(**kwargs)
 
     def post(self, request, *args, **kwargs):
         if request.user.is_authenticated:
@@ -482,13 +503,31 @@ class CategoryListView(ListView):
     model = Category
     template_name = "category_list.html"
     success_url = reverse_lazy("category_list")
+    rows_count = 4
 
     def get(self, request, *args, **kwargs):
         self.request = request
         return super().get(self, request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
+        category_rows = list()
+        row = list()
+        for index, object in enumerate(self.object_list):
+            row.append(object)
+            if ((index + 1) % self.rows_count) == 0:
+                category_rows.append(row)
+                row = list()
+
+        # Add blank items to row to make last row the same length
+        for index in range(
+            self.rows_count - (self.object_list.count() % self.rows_count)
+        ):
+            row.append("blank")
+        category_rows.append(row)
+
         context = super().get_context_data(**kwargs)
+        context["category_rows"] = category_rows
+
         if "category_create" in self.request.POST:
             self.request.method = "GET"
             context["category_create_form"] = CategoryCreateView(
@@ -522,6 +561,12 @@ class CategoryListView(ListView):
             CategoryDeleteView.as_view()(request, pk=self.request.POST["category_pk"])
         elif "submit_category_update" in self.request.POST:
             CategoryUpdateView.as_view()(request, pk=self.request.POST["category_pk"])
+        elif "category_add_delete_products" in self.request.POST:
+            return HttpResponseRedirect(
+                reverse(
+                    "category_checkbox", kwargs={"pk": self.request.POST["category_pk"]}
+                )
+            )
         return render(
             request,
             "category_list.html",
@@ -554,8 +599,18 @@ class CategoryDetailsView(DetailView):
     model = Category
     template_name = "category_details.html"
 
+    def get_context_data(self, **kwargs):
+        # use ProductListView get_context_data method to split category products to rows
+        context = super().get_context_data(**kwargs)
+        product_list_context = ProductListView(
+            object_list=self.object.products.all()
+        ).get_context_data()
+        context["product_rows"] = product_list_context["product_rows"]
+        return context
+
     def post(self, request, *args, **kwargs):
         if "cart_add_button" in request.POST:
+            # add to cart button clicked
             if request.user.is_authenticated:
                 cart = request.user.carts.get(transaction=None)
                 CartView.as_view()(

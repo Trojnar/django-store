@@ -3,15 +3,18 @@
 {% block title %} Images {% endblock title %}
 
 {% block content %}
-    <ul>
+<div class="d-flex justify-content-center">
+    <div class="card text-center">
+      <div class="card-body">
+    <ul style="list-style: none;">
     {% for image, form in images.items %}
         <li><br><img height=300 src="{{ image.image.url }}">
         <form method=post>
             {% csrf_token %}
             {{form}}
-            <button name='delete' value='delete'> Delete </button>
-            <button name='move_up' value='move_up'> Up </button>
-            <button name='move_down' value='move_down'> Down </button>
+            <button class="btn" name='delete' value='delete'> <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill-rule="evenodd" d="M16 1.75V3h5.25a.75.75 0 010 1.5H2.75a.75.75 0 010-1.5H8V1.75C8 .784 8.784 0 9.75 0h4.5C15.216 0 16 .784 16 1.75zm-6.5 0a.25.25 0 01.25-.25h4.5a.25.25 0 01.25.25V3h-5V1.75z"></path><path d="M4.997 6.178a.75.75 0 10-1.493.144L4.916 20.92a1.75 1.75 0 001.742 1.58h10.684a1.75 1.75 0 001.742-1.581l1.413-14.597a.75.75 0 00-1.494-.144l-1.412 14.596a.25.25 0 01-.249.226H6.658a.25.25 0 01-.249-.226L4.997 6.178z"></path><path d="M9.206 7.501a.75.75 0 01.793.705l.5 8.5A.75.75 0 119 16.794l-.5-8.5a.75.75 0 01.705-.793zm6.293.793A.75.75 0 1014 8.206l-.5 8.5a.75.75 0 001.498.088l.5-8.5z"></path></svg> </button>
+            <button class="btn" name='move_up' value='move_up'> <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill-rule="evenodd" d="M18.655 10.405a.75.75 0 000-1.06l-6.25-6.25a.75.75 0 00-1.06 0l-6.25 6.25a.75.75 0 101.06 1.06l4.97-4.97v14.44a.75.75 0 001.5 0V5.435l4.97 4.97a.75.75 0 001.06 0z"></path></svg> </button>
+            <button class="btn" name='move_down' value='move_down'> <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill-rule="evenodd" d="M4.97 13.22a.75.75 0 000 1.06l6.25 6.25a.75.75 0 001.06 0l6.25-6.25a.75.75 0 10-1.06-1.06l-4.97 4.97V3.75a.75.75 0 00-1.5 0v14.44l-4.97-4.97a.75.75 0 00-1.06 0z"></path></svg> </button>
         </li>
         </form>
     {% empty %}
@@ -22,5 +25,8 @@
         {% csrf_token %}
         {{ upload_images_form}}
         <button name='upload_images' value='upload_images'> Upload </button>
-    </form>    
+    </form> 
+</div>
+</div>
+</div>   
 {% endblock content %}

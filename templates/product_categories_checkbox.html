@@ -3,23 +3,25 @@
 {% block title %} {{product.name}} {% endblock title %}
 
 {% block content %}
-
-<h1>{{product.name}}</h1>
+<div class="d-flex justify-content-center">
+    <div class="card text-center">
+      <div class="card-body">
+<h5 class="card-title">{{product.name}}</h5>
 <form enctype="multipart/form-data" method="post">
-    Addable:
+    <h6 class="card-title">Assign:</h6>
     {% csrf_token %}
     {{form_addable}}
     <input type="hidden" name="product_pk" value={{ product.pk }}>
     <br> <input type="submit" name="add_button" value="Add">
 </form>
 <form enctype="multipart/form-data" method="post">
-    Already added:
+    <h6 class="card-title">Assigned:</h6>
     {% csrf_token %}
     {{form_already_added}}
     <input type="hidden" name="product_pk" value={{ product.pk }}>
     <br> <input type="submit" name="delete_button" value="delete">
 </form>
-
-
-
+</div>
+</div>
+</div>
 {% endblock content %}

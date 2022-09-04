@@ -1,12 +1,18 @@
 {% extends '_base.html' %}
 
+{% load crispy_forms_tags %}
+
 {% block title %} Transaction {% endblock title %}
 
 {% block content %}
-
+<div class="d-flex justify-content-center">
+  <div class="card text-center">
+    <div class="card-body">
+          <h5 class="card-title">{{partner_object.name}}</h5>
 <form method="post">
+  
     {% csrf_token %}
-    {{ name_form }}
+    {{ name_form|crispy }}
     {% if choose_address_form %}
     <fieldset>
     <legend><br>Choose existing address:</legend>
@@ -20,7 +26,7 @@
     </fieldset>
     {% comment %} {{ choose_address_form }} {% endcomment %}
     {% endif %}
-    {{ add_new_address_form.as_p }}
+    {{ add_new_address_form|crispy }}
     Choose shipping method:
     <fieldset>
     {{ shipping_methods_form }}
@@ -31,6 +37,9 @@
     </fieldset>
     <input type="submit" name="proceed_to_payment_button" value="Proceed to payment">
 </form>
+</div>
+</div>
+</div>
 
 
 {% endblock content %}

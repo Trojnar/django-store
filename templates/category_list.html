@@ -1,60 +1,101 @@
 {% extends '_base.html' %}
 
+{% load poll_extras %}
+
 {% block title %} List Of Categories {% endblock title %}
 
 {% block content %}
-    <ul>
-    {% for category in object_list %}
-        <li>
-            {% if category_update_form and category.pk|stringformat:'s' == form_pk|stringformat:'s' %}
-                <form method='post'>
-                    {% csrf_token %}
-                    {{ category_update_form }}
-                    <input type="hidden" name="category_pk" value={{ category.pk }}>
-                    <input type="submit" name="submit_category_update" value="submit">
-                </form>
-                <form method='post'>
-                    {% csrf_token %}
-                    <input type="submit" name="cancel" value="Cancel">
-                </form>
-            {% else%}
-                <a href="{{ category.get_absolute_url }}">{{ category.name }}</a>
-                {% if user.is_authenticated and user.is_staff %}
-                    <form method='post' >
+    <br>
+    {% comment %} Grid with categories {% endcomment %}
+    <div class="container">
+        {% for row in category_rows %}
+        <div class="row">
+          {% for category in row %}
+            <div class="col">
+                {% if category != "blank" %}
+                <div class="card text-center">
+                    {% if category_update_form and category.pk|stringformat:'s' == form_pk|stringformat:'s' %}
+                    <form method='post'>
                         {% csrf_token %}
+                        {{ category_update_form }}
                         <input type="hidden" name="category_pk" value={{ category.pk }}>
-                        <input type="submit" name="category_update" value="edit"> 
-                        <input type="submit" name="category_delete" value="delete">
+                        <input type="submit" name="submit_category_update" value="submit">
                     </form>
-                
-                    <form action="{% url 'category_checkbox' category.pk %}" method="get">
-                        <input type="submit" value="add/delete products">
+                    <form method='post'>
+                        {% csrf_token %}
+                        <input type="submit" name="cancel" value="Cancel">
                     </form>
-                {% endif %}
-            {% endif %}
-            
-        </li>
-    {% empty %}
-        <li> No categories created. </li>
-    {% endfor %}
-    </ul>
-    {% if category_create_form %}
-        <form method=post>
-            {% csrf_token %}
-            {{ category_create_form }}
-            <input type="submit" name="submit_category_create" value="Submit">
-        </form>
-        <form method=post>
-            {% csrf_token %}
-            <input type="submit" name="cancel" value="Cancel">
-        </form>
-    {% else %}
-        {% if user.is_authenticated and user.is_staff %}
-            <form method=post>
+                    {% else%}
+                        <a class="h6" href="{{ category.get_absolute_url }}">{{ category.name }}</a>
+                        {% if user.is_authenticated and user.is_staff %}
+                            <form method='post'>
+                                {% csrf_token %}
+                                <input type="hidden" name="category_pk" value={{ category.pk }}>
+                                <button name="category_update" class="btn">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil" viewBox="0 0 16 16">
+                                        <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293l6.5-6.5zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z"/>
+                                    </svg>    
+                                </button>
+                                </button name="category_delete" class="btn">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
+                                        <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
+                                        <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
+                                    </svg>  
+                                </button>
+                                <button name="category_add_delete_products" class="btn">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus" viewBox="0 0 16 16">
+                                        <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+                                    </svg>
+                                </button>      
+                            </form>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            {% endif %}    
+            </div>
+          {% endfor %}
+        </div>
+        {% endfor %}
+      </div>
+
+
+    {% comment %} Create Category Form {% endcomment %}
+    <br><br><br>
+    <div class="d-flex justify-content-center">
+        <div name="submit_category_create" class="card text-center">
+        {% if category_create_form %}
+        <div>
+            <form method=post style="display:inline-block;">
                 {% csrf_token %}
-                <input type="submit" name="category_create" value="Add Category">
+                {{ category_create_form }}
+                <button name="submit_category_create" class="btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check" viewBox="0 0 16 16">
+                        <path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.267.267 0 0 1 .02-.022z"/>
+                    </svg>
+                </button>
             </form>
+            <form method=post style="display:inline-block;">
+                {% csrf_token %}
+                <button name="cancel" class="btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16">
+                        <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
+                    </svg>
+                </button>
+            </form>
+        </div>
+        {% else %}
+            {% if user.is_authenticated and user.is_staff %}
+                <form method=post>
+                    {% csrf_token %}
+                    <button name="category_create" class="btn">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-lg" viewBox="0 0 16 16">
+                            <path fill-rule="evenodd" d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2Z"/>
+                          </svg>
+                    </button>
+                </form>
+            {% endif %}
         {% endif %}
-    {% endif %}
+        </div>
+    </div>
 
 {% endblock content %}
