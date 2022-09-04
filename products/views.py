@@ -21,6 +21,7 @@ from django.contrib.auth.mixins import (
 )
 from django.contrib.auth.decorators import login_required
 from django import forms
+from django.core.paginator import Paginator
 
 from accounts.views import AddressCreate
 from accounts.forms import CustomUserNameForm
@@ -49,6 +50,7 @@ class ProductListView(ListView):
     template_name = "product_list.html"
     ordering = "name"
     rows_count = 4
+    paginate_by_row = 5
 
     def get_context_data(self, **kwargs):
         """split product to rows to display them on page"""
@@ -66,9 +68,12 @@ class ProductListView(ListView):
         ):
             row.append("blank")
         product_rows.append(row)
+        print(self.kwargs)
+        return super().get_context_data(object_list=product_rows, **kwargs)
 
-        kwargs["product_rows"] = product_rows
-        return super().get_context_data(**kwargs)
+    def get_paginate_by(self, queryset):
+        """Get the number of rows to paginate."""
+        return self.paginate_by_row
 
     def post(self, request, *args, **kwargs):
         if request.user.is_authenticated:
@@ -600,13 +605,13 @@ class CategoryDetailsView(DetailView):
     template_name = "category_details.html"
 
     def get_context_data(self, **kwargs):
-        # use ProductListView get_context_data method to split category products to rows
+        # use ProductListView context, with category associated products queryset.
         context = super().get_context_data(**kwargs)
-        product_list_context = ProductListView(
-            object_list=self.object.products.all()
+        associated_products_context = ProductListView(
+            object_list=self.object.products.all(), kwargs=kwargs, request=self.request
         ).get_context_data()
-        context["product_rows"] = product_list_context["product_rows"]
-        return context
+        merged_context = {**context, **associated_products_context}
+        return merged_context
 
     def post(self, request, *args, **kwargs):
         if "cart_add_button" in request.POST:

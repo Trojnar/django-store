@@ -13,8 +13,9 @@
          <div class="card">
                <ul id="lightSlider">
                   {% for image in images %}
-                    <li data-thumb="{{ image.image.url }}"> <img src="{{ image.image.url }}" alt="{{ product.title }}" /> </li>
+                    <li data-thumb="{{ image.image.url }}"> <div class="card"><img src="{{ image.image.url }}" alt="{{ product.title }}" /></div> </li>
                   {% endfor %}
+                
                </ul>  
          </div>       
       </div>

@@ -591,8 +591,15 @@ class CategoryDetailsViewTest(TestCase):
             price=321,
             count=1000,
         )
+        self.product3 = Product.objects.create(
+            name="product_name2",
+            producer="test_producer2",
+            price=1,
+            count=1000,
+        )
         self.category.products.add(self.product1)
         self.category.products.add(self.product2)
+        self.category.products.add(self.product3)
         assert self.client.login(username="testuser", password="testpass123")
         self.response = self.client.get(
             reverse("category_details", kwargs={"pk": self.category.pk})
@@ -619,7 +626,7 @@ class CategoryDetailsViewTest(TestCase):
         self.assertContains(self.response, self.product1.producer)
         self.assertContains(self.response, self.product2.producer)
         self.assertContains(self.response, str(self.product1.count) + " left.")
-        self.assertContains(self.response, "cart_add_button", count=2)
+        self.assertContains(self.response, "cart_add_button", count=3)
 
     def test_add_to_cart(self):
         product_count = self.product1.count
@@ -667,6 +674,10 @@ class CategoryDetailsViewTest(TestCase):
         self.assertContains(
             self.response,
             str(self.product2.price)[:-2] + "," + str(self.product2.price)[-2:],
+        )
+        self.assertContains(
+            self.response,
+            "0,01",
         )
 
 
