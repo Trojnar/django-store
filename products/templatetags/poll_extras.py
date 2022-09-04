@@ -12,3 +12,8 @@ def zip_lists(a, b):
 def decimal_separator(price):
     price_str = str(price)
     return price_str[:-2] + "," + price_str[-2:]
+
+
+@register.filter(name="every")
+def every(num, val):
+    return num % val == 0

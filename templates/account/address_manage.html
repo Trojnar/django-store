@@ -1,11 +1,15 @@
 {% extends "_base.html" %}
 
 {% load i18n %}
+{% load crispy_forms_tags %}
 
 {% block head_title %}{% trans "Addresses" %}{% endblock %}
 
 {% block content %}
-    <h1>{% trans "Addresses" %}</h1>
+<div class="d-flex justify-content-center">
+  <div class="card text-center">
+    <div class="card-body">
+          <h5 class="card-title">{% trans "Addresses" %}</h5>
 {% if user.addresses.all %}
 <p>{% trans 'The following addresses are associated with your account:' %}</p>
 
@@ -26,7 +30,7 @@
   {% endfor %}
 
 <div class="buttonHolder">
-      <button class="primaryAction" type="submit" name="remove_button" > Remove </button>
+      <button class="btn btn-outline-success" type="submit" name="remove_button" > Remove </button>
 </div>
 
 </fieldset>
@@ -37,13 +41,16 @@
 
 {% endif %}
 
-    <h2>Address</h2>
+    <br><h5>Address</h5>
 
     <form method="post" action="{% url 'address_manage' %}">
         {% csrf_token %}
-        {{ form.as_p }}
-        <button name="add_button" type="submit">  Add Address </button>
+        {{ form|crispy }}
+        <br><button class="btn btn-outline-success" name="add_button" type="submit">  Add Address </button>
     </form>
+</div>
+</div>
+</div>
 
 {% endblock %}
 

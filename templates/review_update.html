@@ -1,14 +1,21 @@
 {% extends '_base.html' %}
 
+{% load crispy_forms_tags %}
+
 {% block title %} Update Reviews {% endblock title %}
 
 {% block content %}
-
+<div class="d-flex justify-content-center">
+    <div class="card text-center">
+      <div class="card-body">
+            <h5 class="card-title">{{partner_object.name}}</h5>
 <form method="post">
     {% csrf_token %}
-    {{ form.as_p }}
+    {{ form|crispy }}
     <input type="submit" value="Save">
 </form>
 
-
+</div>
+</div>
+</div>
 {% endblock content %}

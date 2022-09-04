@@ -1,23 +1,29 @@
 {% extends '_base.html' %}
 
+{% load crispy_forms_tags %}
+
 {% block title %} {{partner_object.name}} {% endblock title %}
 
 {% block content %}
-
-<h1>{{partner_object.name}}</h1>
-<form enctype="multipart/form-data" method="post">
-    Assign:
-    {% csrf_token %}
-    {{form_addable}}
-    <br> <input type="submit" name="add_button" value="Add">
-</form>
-<form enctype="multipart/form-data" method="post">
-    Assigned:
-    {% csrf_token %}
-    {{form_already_added}}
-    <br> <input type="submit" name="delete_button" value="delete">
-</form>
-
+<div class="d-flex justify-content-center">
+    <div class="card text-center">
+      <div class="card-body">
+            <h5 class="card-title">{{partner_object.name}}</h5>
+            <form enctype="multipart/form-data" method="post">
+                <h6 class="card-title">Assign:</h6>
+                {% csrf_token %}
+                {{form_addable|crispy}}
+                <br> <input class="btn btn-outline-success" type="submit" name="add_button" value="Add">
+            </form>
+            <form enctype="multipart/form-data" method="post">
+                <h6 class="card-title">Assigned:</h6>
+                {% csrf_token %}
+                {{form_already_added|crispy}}
+                <br> <input class="btn btn-outline-success" type="submit" name="delete_button" value="Delete">
+            </form>
+        </div>
+    </div>
+</div>
 
 
 {% endblock content %}

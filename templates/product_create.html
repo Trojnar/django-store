@@ -1,18 +1,27 @@
 {% extends '_base.html' %}
 
+{% load crispy_forms_tags %}
+
+
 {% block title %} Add Product {% endblock title %}
 
 {% block content %}
 
-<form enctype="multipart/form-data" method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    Categories:
-    {{form_addable}}
-    <br>
-    <input name="image" type="file" multiple>
-    <br><br><input type="submit" name='add_product' value="Add Product">
-    
-</form>
-
+<div class="d-flex justify-content-center">
+    <div class="card text-center">
+        <div class="card-body">
+            <form enctype="multipart/form-data" method="post">
+                <h5 class="card-title">Add Product</h5>
+                {% csrf_token %}
+                {{ form|crispy }}
+                Categories:
+                {{ form_addable|crispy }}
+                <br>
+                <input name="image" type="file" multiple>
+                <br><br><input class="btn btn-outline-success" type="submit" name='add_product' value="Add Product">
+                
+            </form>
+        </div>
+    </div>
+</div>
 {% endblock content %}
