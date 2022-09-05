@@ -31,7 +31,7 @@ def cart(request):
 
     CartView().cart_count_price(cart=cart)
 
-    forms = CartView(
+    cart_forms = CartView(
         object=cart,
         request=request,
     ).get_forms()
@@ -39,5 +39,5 @@ def cart(request):
     return {
         "cart_object": cart,
         "cart_cart_items_len": len(cart.cart_items.all()),
-        "forms": forms,
+        "cart_forms": cart_forms,
     }

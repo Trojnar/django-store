@@ -83,9 +83,10 @@
                 </a>
                 <ul class="dropdown-menu text-center">
                   {% comment %} Cart context app. {% endcomment %}
-                        <form action={% url 'cart_details' cart_object.pk %} method="post">
-                          {% csrf_token %}
-                          {% for cart_item, form in cart_object.cart_items.all|zip:forms %}
+                        
+                          {% for cart_item, form in cart_object.cart_items.all|zip:cart_forms %}
+                          <form action={% url 'cart_details' cart_object.pk %} method="post">
+                            {% csrf_token %}
                             <li class="dropdown-item">
                               <button name="delete_button" class="btn">
                                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
@@ -95,17 +96,20 @@
                               </button>   
                               <a href="{{ cart_item.product.get_absolute_url }}">{{cart_item.product.name}} - {{cart_item.product.price|decimal_separator}} $ - {{cart_item.product.producer}}</a>  {{ form }}</li>
                                   <input hidden name="cart_item_pk" value={{cart_item.pk}}>
-                           </li>
-              
+                            </li>
+                          </form>
                           {% empty %}
                               <li class="dropdown-item"> No products in cart. </li>
                           {% endfor %}
                           {% if cart_object.cart_items.count > 0 %}
+                          <form action={% url 'cart_details' cart_object.pk %} method="post">
+                              {% csrf_token %}
                               <li class="dropdown-item">
-                                <br>Price: ${{ cart.price|decimal_separator}} 
+                                <br>Price: ${{cart.price|decimal_separator}} 
                                 <br><br><input  class="btn btn-outline-success" name="save_button" type="submit" value="Save">
                                 <input class="btn btn-outline-success" name="buy_button" type="submit" value="Buy">
                               </li>
+                          </form>
                           {% endif %}
           
                         </form>
