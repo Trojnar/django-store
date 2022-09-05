@@ -31,12 +31,13 @@ def cart(request):
 
     CartView().cart_count_price(cart=cart)
 
-    # add decimal separator to price
-    cart_price_str = str(cart.price)
-    cart_price_str = cart_price_str[:-2] + "," + cart_price_str[-2:]
+    forms = CartView(
+        object=cart,
+        request=request,
+    ).get_forms()
 
     return {
-        "cart_price_str": cart_price_str,
         "cart_object": cart,
         "cart_cart_items_len": len(cart.cart_items.all()),
+        "forms": forms,
     }

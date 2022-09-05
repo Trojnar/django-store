@@ -76,7 +76,6 @@
 </form>
       </form>
       {% if user.is_authenticated and user.is_staff %}
-      <a href={% url 'product_update' pk=product.pk%}>Edit Product</a>
       <a href={% url 'images_manager' pk=product.pk%}>Manage Images</a>
       <a href={% url 'product_category_checkbox' product.pk %}>Manage Categories.</a>
       {% endif %}

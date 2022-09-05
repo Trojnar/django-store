@@ -51,24 +51,33 @@ class ProductListView(ListView):
     ordering = "name"
     rows_count = 4
     paginate_by_row = 5
+    queryset = Product.objects.prefetch_related(
+        Prefetch("images", Image.objects.filter(place=0), to_attr="thumbnail")
+    )
 
     def get_context_data(self, **kwargs):
-        """split product to rows to display them on page"""
+        """split product to rows to display them on page, and add thumbnail
+        (product, thumbnail) for self.rows_count in row"""
         product_rows = list()
         row = list()
-        for index, object in enumerate(self.object_list):
-            row.append(object)
+        for index, object in enumerate(self.queryset):
+            if object.thumbnail:
+                # There should be queryset with only one product, because of filter in
+                # prefetch, so record of index 0 should be only one possible.
+                thumbnail = object.thumbnail[0]
+                row.append((object, thumbnail))
+            else:
+                row.append((object, "no thumbnail"))
+
+            # Add row every self.rows_count'th iteration
             if ((index + 1) % self.rows_count) == 0:
                 product_rows.append(row)
                 row = list()
 
         # Add blank items to row to make last row the same length
-        for index in range(
-            self.rows_count - (self.object_list.count() % self.rows_count)
-        ):
-            row.append("blank")
+        for index in range(self.rows_count - (self.queryset.count() % self.rows_count)):
+            row.append(("blank", "no thumbnail"))
         product_rows.append(row)
-        print(self.kwargs)
         return super().get_context_data(object_list=product_rows, **kwargs)
 
     def get_paginate_by(self, queryset):
@@ -206,6 +215,21 @@ class ImageDeleteView(StaffPrivilegesRequiredMixin, DeleteView):
     model = Image
     success_url = reverse_lazy("product_list")
 
+    def post(self, request, *args, **kwargs):
+        response = super().post(request, *args, **kwargs)
+        self.fix_image_places(product_pk=request.POST["product_pk"])
+        return response
+
+    def fix_image_places(self, product_pk=None):
+        """Fix places after image is deleted"""
+        if product_pk is None:
+            raise ValueError("product_pk can't be None value.")
+
+        images = Product.objects.get(pk=product_pk).images.all()
+        for index, image in enumerate(images):
+            image.place = index
+            image.save()
+
 
 class ImageManagerView(StaffPrivilegesRequiredMixin, FormView):
     """View that provides managing images feature for product."""
@@ -214,6 +238,7 @@ class ImageManagerView(StaffPrivilegesRequiredMixin, FormView):
     form_class = ImagesManagerForm
 
     def get(self, request, *args, **kwargs):
+        product = Product.objects.get(pk=kwargs["pk"])
         return self.render_to_response(self.get_context_data(**kwargs))
 
     def get_context_data(self, **kwargs):
@@ -462,10 +487,23 @@ class SearchResultView(TemplateView):
         context = super().get_context_data(**kwargs)
         phrase = self.request.GET.get("phrase", None)
         if phrase:
-            queryset = self.search(phrase)
-            context["search_result"] = queryset
+            context["phrase"] = phrase
+            search_results = self.search(phrase)
+            queryset = Product.objects.filter(
+                pk__in={product.pk for product in search_results}
+            )
+            associated_products_context = ProductListView(
+                queryset=queryset.prefetch_related(
+                    Prefetch(
+                        "images", Image.objects.filter(place=0), to_attr="thumbnail"
+                    )
+                ),
+                kwargs=kwargs,
+                request=self.request,
+            ).get_context_data()
 
-        return context
+            merged_context = {**context, **associated_products_context}
+        return merged_context
 
     def search(self, phrase):
         # Dictionary with field names to search in and priority rate as keys and list
@@ -608,7 +646,11 @@ class CategoryDetailsView(DetailView):
         # use ProductListView context, with category associated products queryset.
         context = super().get_context_data(**kwargs)
         associated_products_context = ProductListView(
-            object_list=self.object.products.all(), kwargs=kwargs, request=self.request
+            queryset=self.object.products.prefetch_related(
+                Prefetch("images", Image.objects.filter(place=0), to_attr="thumbnail")
+            ),
+            kwargs=kwargs,
+            request=self.request,
         ).get_context_data()
         merged_context = {**context, **associated_products_context}
         return merged_context
@@ -753,7 +795,9 @@ class ObjectOwnershipRequiredMixin:
     """Raise page not found exception if object in UpdateView or DeleteView is not
     request's user property"""
 
-    def __init__(self):
+    def __init__(self, **kwargs):
+        for key, value in kwargs.items():
+            setattr(self, key, value)
         self.__is_object_property = False
 
     def get_object(self, queryset=None):
@@ -786,15 +830,23 @@ class CartView(LoginRequiredMixin, ObjectOwnershipRequiredMixin, UpdateView):
     def get(self, request, *args, **kwargs):
         self.object = self.get_object()
 
+        kwargs["forms"] = self.get_forms()
+
+        return self.render_to_response(self.get_context_data(**kwargs))
+
+    def get_forms(self, object=None):
+        if object is None:
+            if self.object is None:
+                raise ValueError("object can't be None value.s")
+            object = self.object
+
         forms = list()
-        for cart_item in self.object.cart_items.all():
+        for cart_item in object.cart_items.all():
             # set initial for each cart item form
             self.initial = {"count": cart_item.count}
             form = self.get_form()
             forms.append(form)
-        kwargs["forms"] = forms
-
-        return self.render_to_response(self.get_context_data(**kwargs))
+        return forms
 
     def post(self, request, *args, **kwargs):
         self.object = self.get_object()

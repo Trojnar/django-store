@@ -1,17 +1,84 @@
 {% extends '_base.html' %}
 
+{% load poll_extras %}
+{% load static %}
+
 {% block title %} Search {% endblock title %}
 
 {% block content %}
-    <h1>Result:</h1>
-    {% if search_result %}
-        {% for result in search_result %}
-        <br> {{result.name}}
-        <br> {{result.producer}}
-        <br> {{result.price}}
-        <br> -------------------------------
-        {% endfor %}
-    {% else %}
-        No results to show.
-    {% endif %}
+
+<div class="containser text-center">
+    <h3>Search results for "{{phrase}}": </h3>
+</div>
+
+<div class="container">
+  {% for row in page_obj %}
+  <br>
+  <div class="row">
+    {% for product, thumbnail in row %}
+      <div class="col">
+        {% if product != "blank" %}
+          <div class="card text-center">
+            {% if thumbnail != "no thumbnail" %}
+              <div class="card-body text-center">
+                <img src={{thumbnail.image.url}} class="img-thumbnail"  style="max-height: 15rem; max-width: 15rem;"  alt={{product.title}}>
+              </div>
+            {% else %}
+              <div>
+              <img src={% static 'images/no_image.jpg'%} class="img-thumbnail" style="max-height: 15rem; max-width: 15rem;" alt={{product.title}}>
+              </div>
+            {% endif %}
+            
+            <div class="card-body">
+              <h5 class="card-title"><a href="{{ product.get_absolute_url }}">{{ product.name }}</a></h5>
+              <h6 class="card-title">{{ product.producer }}</h6>
+              <p class="card-text"> ${{ product.price|decimal_separator }}</p>
+              {% if product.count > 0 %}
+                <p class="card-text"> In stock. {{product.count}} left. </p>
+              {% else %}
+                <p class="card-text"> Not in stock. </p>
+              {% endif %}
+              <form method=post>
+                {% csrf_token %}
+                <input hidden name="product_pk" value={{product.pk}}>
+                <button name="cart_add_button" class="btn">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-cart-plus" viewBox="0 0 16 16">
+                    <path d="M9 5.5a.5.5 0 0 0-1 0V7H6.5a.5.5 0 0 0 0 1H8v1.5a.5.5 0 0 0 1 0V8h1.5a.5.5 0 0 0 0-1H9V5.5z"/>
+                    <path d="M.5 1a.5.5 0 0 0 0 1h1.11l.401 1.607 1.498 7.985A.5.5 0 0 0 4 12h1a2 2 0 1 0 0 4 2 2 0 0 0 0-4h7a2 2 0 1 0 0 4 2 2 0 0 0 0-4h1a.5.5 0 0 0 .491-.408l1.5-8A.5.5 0 0 0 14.5 3H2.89l-.405-1.621A.5.5 0 0 0 2 1H.5zm3.915 10L3.102 4h10.796l-1.313 7h-8.17zM6 14a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm7 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/>
+                  </svg>
+                </button>
+              </form>
+            </div>
+          </div>
+        {% endif %}
+      </div>
+    {% endfor %}
+  </div>
+  {% endfor %}
+</div>
+
+
+<br>
+
+<div class="card">
+<div class="text-center">
+  <span class="step-links">
+      {% if page_obj.has_previous %}
+          <a href="?page=1">&laquo; first</a>
+          <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+      {% endif %}
+
+      <span class="current">
+          Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+      </span>
+
+      {% if page_obj.has_next %}
+          <a href="?page={{ page_obj.next_page_number }}">next</a>
+          <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+      {% endif %}
+  </span>
+</div>
+</div>
+
+
 {% endblock content %}

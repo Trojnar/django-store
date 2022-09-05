@@ -43,7 +43,6 @@ urlpatterns = [
     ),
     path("search/", SearchResultView.as_view(), name="search_result"),
     path("create/", ProductCreateView.as_view(), name="product_create"),
-    path("update/<uuid:pk>/", ProductUpdateView.as_view(), name="product_update"),
     path("images/<uuid:pk>/", ImageManagerView.as_view(), name="images_manager"),
     path(
         "images/<uuid:product_pk>/delete/<int:image_pk>/",
