@@ -102,7 +102,7 @@
                           {% endfor %}
                           {% if cart_object.cart_items.count > 0 %}
                               <li class="dropdown-item">
-                                <br>Price: ${{ cart.price|decimal_separator}} 
+                                <br>Price: ${{ cart_object.price|decimal_separator}} 
                                 <br><br><input  class="btn btn-outline-success" name="save_button" type="submit" value="Save">
                                 <input class="btn btn-outline-success" name="buy_button" type="submit" value="Buy">
                               </li>
