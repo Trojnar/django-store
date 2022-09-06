@@ -6,8 +6,6 @@ from .views import (
     SearchResultView,
     EditProductDetailsView,
     EditReviewProductDetailsView,
-    ImageManagerView,
-    ImageDeleteView,
     ProductManageCategoriesView,
 )
 
@@ -32,12 +30,6 @@ urlpatterns = [
     ),
     path("search/", SearchResultView.as_view(), name="search_result"),
     path("create/", ProductCreateView.as_view(), name="product_create"),
-    path("images/<uuid:pk>/", ImageManagerView.as_view(), name="images_manager"),
-    path(
-        "images/<uuid:product_pk>/delete/<int:image_pk>/",
-        ImageDeleteView.as_view(),
-        name="image_delete",
-    ),
     path(
         "<uuid:pk>/checkbox",
         ProductManageCategoriesView.as_view(),

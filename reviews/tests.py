@@ -15,7 +15,7 @@ class ReviewTest(TestCase):
         self.product = Product.objects.create(
             name="testitem",
             producer="testcompany",
-            price="2.5",
+            price="25",
         )
         self.review = Review.objects.create(
             author=self.user,

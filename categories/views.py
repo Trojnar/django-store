@@ -16,11 +16,12 @@ from django.contrib.auth.mixins import (
 from .models import Category
 
 
-from accounts.views import StaffPrivilegesRequiredMixin
+from accounts.utils.utils import StaffPrivilegesRequiredMixin
 from transactions.views import CartView
 from products.views import ProductListView
-from products.models import Image, Product
+from products.models import get_product_model
 from products.views import CheckboxView
+from images.models import Image
 
 
 class CategoryListView(ListView):
@@ -124,7 +125,7 @@ class CategoryDetailsView(DetailView):
     template_name = "category_details.html"
 
     def get_context_data(self, **kwargs):
-        # TODO crate funciton to paginate queryset
+        # TODO crate funciton to paginate queryset, and get thumbnails
         # use ProductListView context, with category associated products queryset.
         context = super().get_context_data(**kwargs)
         associated_products_context = ProductListView(
@@ -155,7 +156,7 @@ class CategoryDetailsView(DetailView):
 class CategoryManageProductsView(
     LoginRequiredMixin, StaffPrivilegesRequiredMixin, CheckboxView
 ):
-    model = Product
+    model = get_product_model()
     partner_model = Category
     relation_name = "products"
     template_name = "category_checkbox.html"

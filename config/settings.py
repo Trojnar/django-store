@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     "reviews",
     "transactions",
     "categories",
+    "images",
     # External
     "debug_toolbar",
     "django_extensions",

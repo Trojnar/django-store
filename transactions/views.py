@@ -19,7 +19,7 @@ from .forms import (
     CartItemForm,
     RadioForm,
 )
-from accounts.views import StaffPrivilegesRequiredMixin
+from accounts.utils.utils import StaffPrivilegesRequiredMixin
 
 
 class ObjectOwnershipRequiredMixin:

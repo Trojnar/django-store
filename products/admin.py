@@ -1,15 +1,12 @@
 from django.contrib import admin
-from .models import Product, Image
+from .models import Product
 from reviews.models import Review
 from categories.admin import CategoryInline
+from images.admin import ImageInline
 
 
 class ReviewInline(admin.TabularInline):
     model = Review
-
-
-class ImageInline(admin.TabularInline):
-    model = Image
 
 
 class ProductAdmin(admin.ModelAdmin):
