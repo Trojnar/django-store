@@ -4,7 +4,7 @@ from django.views.generic import TemplateView
 from django.urls import reverse_lazy, reverse
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth import get_user_model
-from django.contrib.auth.mixins import UserPassesTestMixin
+
 
 from .models import CustomUser, Address
 from .forms import AddressForm, CustomUserCreationForm, CustomUserNameForm
@@ -58,15 +58,3 @@ class AddressManage(LoginRequiredMixin, TemplateView):
         if "remove_button" in request.POST:
             AddressDelete.as_view()(request, pk=request.POST["address"])
         return HttpResponseRedirect(reverse("address_manage"))
-
-
-class StaffPrivilegesRequiredMixin(UserPassesTestMixin):
-    """Mixin that provides feature of checking if user is staff and forbids to
-    pass if it is."""
-
-    def test_func(self):
-        authorized = False
-        user = self.request.user
-        if user.is_staff or user.is_superuser:
-            authorized = True
-        return authorized

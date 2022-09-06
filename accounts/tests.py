@@ -140,12 +140,27 @@ class AccountSettingsViewTest(TestCase):
         )
         self.assertContains(
             response,
-            '<a href="%s">Manage e-mail</a>' % reverse("account_email"),
+            '<a href="%s">E-mails</a>' % reverse("account_email"),
             html=True,
         )
         self.assertContains(
             response,
-            '<a href="%s">Manage socials</a>' % reverse("socialaccount_connections"),
+            '<a href="%s">Socials</a>' % reverse("socialaccount_connections"),
+            html=True,
+        )
+        self.assertContains(
+            response,
+            '<a href="%s">Addresses</a>' % reverse("address_manage"),
+            html=True,
+        )
+        self.assertContains(
+            response,
+            '<a href="%s">Transactions</a>' % reverse("transaction_history"),
+            html=True,
+        )
+        self.assertContains(
+            response,
+            '<a href="%s">Log Out</a>' % reverse("account_logout"),
             html=True,
         )
 

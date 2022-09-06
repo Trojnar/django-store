@@ -105,7 +105,11 @@
                           <form action={% url 'cart_details' cart_object.pk %} method="post">
                               {% csrf_token %}
                               <li class="dropdown-item">
+<<<<<<< HEAD
                                 <br>Price: ${{cart.price|decimal_separator}} 
+=======
+                                <br>Price: ${{ cart_object.price|decimal_separator}} 
+>>>>>>> dev
                                 <br><br><input  class="btn btn-outline-success" name="save_button" type="submit" value="Save">
                                 <input class="btn btn-outline-success" name="buy_button" type="submit" value="Buy">
                               </li>
@@ -155,6 +159,7 @@
         </div>
       </div>
     </nav>
+      <div>
          {% block content %}{% endblock content %}
       </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-A3rJD856KowSb7dwlZdYEkO39Gagi7vIsF0jrRAoQmDKKtQBHUuLZ9AsSv4jD4Xa" crossorigin="anonymous"></script>

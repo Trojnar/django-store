@@ -49,6 +49,9 @@ INSTALLED_APPS = [
     "pages",
     "products",
     "reviews",
+    "transactions",
+    "categories",
+    "images",
     # External
     "debug_toolbar",
     "django_extensions",
@@ -89,7 +92,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
-                "products.context_processors.cart",
+                "transactions.context_processors.cart",
             ],
         },
     },

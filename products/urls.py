@@ -6,20 +6,7 @@ from .views import (
     SearchResultView,
     EditProductDetailsView,
     EditReviewProductDetailsView,
-    ProductUpdateView,
-    ImagesUpload,
-    ImageManagerView,
-    ImageDeleteView,
-    CategoryListView,
-    CategoryDeleteView,
-    CategoryCreateView,
-    CategoryUpdateView,
-    CategoryDetailsView,
-    CategoryManageProductsView,
     ProductManageCategoriesView,
-    CartView,
-    TransactionView,
-    TransactionsUserListView,
 )
 
 urlpatterns = [
@@ -43,53 +30,9 @@ urlpatterns = [
     ),
     path("search/", SearchResultView.as_view(), name="search_result"),
     path("create/", ProductCreateView.as_view(), name="product_create"),
-    path("images/<uuid:pk>/", ImageManagerView.as_view(), name="images_manager"),
-    path(
-        "images/<uuid:product_pk>/delete/<int:image_pk>/",
-        ImageDeleteView.as_view(),
-        name="image_delete",
-    ),
-    path("category/", CategoryListView.as_view(), name="category_list"),
-    path(
-        "category/delete/<int:pk>",
-        CategoryDeleteView.as_view(),
-        name="category_delete",
-    ),
-    path(
-        "category/update/<int:pk>",
-        CategoryUpdateView.as_view(),
-        name="category_update",
-    ),
-    path("category/create", CategoryCreateView.as_view(), name="category_create"),
-    path("category/<int:pk>", CategoryDetailsView.as_view(), name="category_details"),
-    path(
-        "category/<int:pk>/checkbox",
-        CategoryManageProductsView.as_view(),
-        name="category_checkbox",
-    ),
     path(
         "<uuid:pk>/checkbox",
         ProductManageCategoriesView.as_view(),
         name="product_category_checkbox",
-    ),
-    path(
-        "cart/<int:pk>",
-        CartView.as_view(),
-        name="cart_details",
-    ),
-    path(
-        "cart/<int:pk>",
-        CartView.as_view(),
-        name="cart_details",
-    ),
-    path(
-        "transaction/<int:pk>",
-        TransactionView.as_view(),
-        name="transaction",
-    ),
-    path(
-        "transactions",
-        TransactionsUserListView.as_view(),
-        name="transaction_history",
     ),
 ]

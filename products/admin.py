@@ -1,38 +1,12 @@
 from django.contrib import admin
-from .models import Product, Image, Category, CartItem, Cart
+from .models import Product
 from reviews.models import Review
+from categories.admin import CategoryInline
+from images.admin import ImageInline
 
 
 class ReviewInline(admin.TabularInline):
     model = Review
-
-
-class ImageInline(admin.TabularInline):
-    model = Image
-
-
-class CategoryInline(admin.TabularInline):
-    model = Category.products.through
-
-
-class CartItemInline(admin.TabularInline):
-    model = CartItem
-
-
-class CartAdmin(admin.ModelAdmin):
-    inlines = [
-        CartItemInline,
-    ]
-    list_display = ("user", "transaction")
-    fields = ("user",)
-
-
-class CategoryAdmin(admin.ModelAdmin):
-    inline = [
-        CategoryInline,
-    ]
-    exclude = ("category",)
-    list_display = ("name",)
 
 
 class ProductAdmin(admin.ModelAdmin):
@@ -52,12 +26,4 @@ class ProductAdmin(admin.ModelAdmin):
 admin.site.register(
     Product,
     ProductAdmin,
-)
-admin.site.register(
-    Category,
-    CategoryAdmin,
-)
-admin.site.register(
-    Cart,
-    CartAdmin,
 )
