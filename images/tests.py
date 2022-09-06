@@ -8,7 +8,7 @@ import requests
 
 # Create your tests here.
 # Images app test
-class ImageManager(TestCase):
+class ImageManagerTest(TestCase):
     @classmethod
     def setUpTestData(self):
         self.product = get_product_model().objects.create(
@@ -136,7 +136,11 @@ class ImageManager(TestCase):
         images_count = self.product.images.count()
         response = self.client.post(
             self.url,
-            data={"image_pk": self.product.images.last().pk, "delete": "delete"},
+            data={
+                "image_pk": self.product.images.last().pk,
+                "delete": "delete",
+                "product_pk": self.product.pk,
+            },
             follow=True,
         )
         self.assertEqual(response.status_code, 200)

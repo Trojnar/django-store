@@ -190,16 +190,19 @@ class SearchResultViewTest(TestCase):
             name="Hoe",
             producer="Universe",
             price=2.5,
+            count=1000,
         )
         self.product2 = Product.objects.create(
             name="Scythe",
             producer="Some producer",
             price=12.5,
+            count=500,
         )
         self.product3 = Product.objects.create(
             name="Scythe",
             producer="Hoe",
             price=1234.5,
+            count=200,
         )
         self.response = self.client.get(reverse("search_result"))
 
@@ -218,6 +221,9 @@ class SearchResultViewTest(TestCase):
         self.assertContains(response, "Scythe")
         self.assertContains(response, "Hoe")
         self.assertNotContains(response, "Universe")
+        self.assertNotContains(response, "1000 left.")
+        self.assertNotContains(response, "500 left.")
+        self.assertNotContains(response, "200 left.")
 
         response = self.client.get(reverse("search_result"), {"phrase": "producer"})
         self.assertContains(response, "Scythe")
