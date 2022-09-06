@@ -3,7 +3,7 @@ Simple store in python django.
 
 ## Setup project
 To set up this project locally: 
-* Set up variable.env file located in the main project directory, then move the file to ./config/environment/ path.
+* Set up variables.env file located in the main project directory, then move the file to ./config/environment/ path.
 * Set up environment using docker containers.
 
 ```
