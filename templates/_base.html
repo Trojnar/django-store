@@ -105,11 +105,7 @@
                           <form action={% url 'cart_details' cart_object.pk %} method="post">
                               {% csrf_token %}
                               <li class="dropdown-item">
-<<<<<<< HEAD
-                                <br>Price: ${{cart.price|decimal_separator}} 
-=======
                                 <br>Price: ${{ cart_object.price|decimal_separator}} 
->>>>>>> dev
                                 <br><br><input  class="btn btn-outline-success" name="save_button" type="submit" value="Save">
                                 <input class="btn btn-outline-success" name="buy_button" type="submit" value="Buy">
                               </li>
