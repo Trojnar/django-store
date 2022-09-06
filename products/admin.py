@@ -1,6 +1,7 @@
 from django.contrib import admin
-from .models import Product, Image, Category
+from .models import Product, Image
 from reviews.models import Review
+from categories.admin import CategoryInline
 
 
 class ReviewInline(admin.TabularInline):
@@ -9,18 +10,6 @@ class ReviewInline(admin.TabularInline):
 
 class ImageInline(admin.TabularInline):
     model = Image
-
-
-class CategoryInline(admin.TabularInline):
-    model = Category.products.through
-
-
-class CategoryAdmin(admin.ModelAdmin):
-    inline = [
-        CategoryInline,
-    ]
-    exclude = ("category",)
-    list_display = ("name",)
 
 
 class ProductAdmin(admin.ModelAdmin):
@@ -40,8 +29,4 @@ class ProductAdmin(admin.ModelAdmin):
 admin.site.register(
     Product,
     ProductAdmin,
-)
-admin.site.register(
-    Category,
-    CategoryAdmin,
 )

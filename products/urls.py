@@ -8,12 +8,6 @@ from .views import (
     EditReviewProductDetailsView,
     ImageManagerView,
     ImageDeleteView,
-    CategoryListView,
-    CategoryDeleteView,
-    CategoryCreateView,
-    CategoryUpdateView,
-    CategoryDetailsView,
-    CategoryManageProductsView,
     ProductManageCategoriesView,
 )
 
@@ -43,24 +37,6 @@ urlpatterns = [
         "images/<uuid:product_pk>/delete/<int:image_pk>/",
         ImageDeleteView.as_view(),
         name="image_delete",
-    ),
-    path("category/", CategoryListView.as_view(), name="category_list"),
-    path(
-        "category/delete/<int:pk>",
-        CategoryDeleteView.as_view(),
-        name="category_delete",
-    ),
-    path(
-        "category/update/<int:pk>",
-        CategoryUpdateView.as_view(),
-        name="category_update",
-    ),
-    path("category/create", CategoryCreateView.as_view(), name="category_create"),
-    path("category/<int:pk>", CategoryDetailsView.as_view(), name="category_details"),
-    path(
-        "category/<int:pk>/checkbox",
-        CategoryManageProductsView.as_view(),
-        name="category_checkbox",
     ),
     path(
         "<uuid:pk>/checkbox",
