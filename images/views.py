@@ -88,7 +88,7 @@ class ImageManagerView(StaffPrivilegesRequiredMixin, FormView):
             # super().get_context_data needs initial to make first form
             self.initial = {"image_pk": images[0].pk, "product_pk": kwargs["pk"]}
             context = super().get_context_data(**kwargs)
-            # Initializaition of the first form happened in super().get_context_data
+            # Initialization of the first form happened in super().get_context_data
             context["images"] = dict()
             context["images"][images[0]] = context["form"]
             for image in images[1:]:
