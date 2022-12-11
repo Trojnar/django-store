@@ -202,7 +202,7 @@ class EditProductDetailsView(
         context = super().get_context_data(**kwargs)
         context["new_review"] = "You can enter your review here. "
 
-        # Change field in product dict choosen by get's variable self.edit,
+        # Change field in product dict chosen by get's variable self.edit,
         # into form's widget. Pass it to the context.
         if self.edit and self.edit in self.editables:
             form = ProductForm()
@@ -221,9 +221,9 @@ class EditProductDetailsView(
         return context
 
     def post(self, request, *args, **kwargs):
-        # Get product and choosen field to edit from get, get post data, create dict
+        # Get product and chosen field to edit from get, get post data, create dict
         # with product details, create form and validate input. Override database data
-        # in choosen kwargs["edit"] field.
+        # in chosen kwargs["edit"] field.
         try:
             edit = kwargs["edit"]
         except KeyError:
